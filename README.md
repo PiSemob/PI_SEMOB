@@ -1,7 +1,6 @@
-# Ferret — BI Platform (Frontend)
+# Ferret 
 
-Plataforma de Business Intelligence e IA para gestão do transporte público municipal (SEMOB-SCS).
-Projeto Integrador acadêmico — **apenas frontend**, sem backend, sem API, sem autenticação real.
+Plataforma com IA para gestão do transporte público municipal (SEMOB-SCS).
 
 ## Identidade visual
 
