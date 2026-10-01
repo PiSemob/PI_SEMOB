@@ -1,0 +1,41 @@
+name: mobi_ai
+description: >-
+  MOBI.AI - Plataforma com Inteligencia Artificial
+  para gestao do transporte publico municipal (SEMOB).
+publish_to: "none"
+version: 0.1.0+1
+
+environment:
+  sdk: ">=3.6.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+
+  flutter_riverpod: ^2.5.1
+  go_router: ^14.2.7
+  fl_chart: ^0.69.0
+  intl: ^0.20.3
+  shared_preferences: ^2.3.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true
+
+  fonts:
+    - family: Inter
+      fonts:
+        - asset: assets/fonts/Inter-400.ttf
+          weight: 400
+        - asset: assets/fonts/Inter-500.ttf
+          weight: 500
+        - asset: assets/fonts/Inter-600.ttf
+          weight: 600
+        - asset: assets/fonts/Inter-700.ttf
+          weight: 700
