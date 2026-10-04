@@ -10,7 +10,10 @@ dependencies = [
     "fastapi",
     "uvicorn[standard]",
     "pydantic-settings",
+    "pandas",
+    "lxml",
 ]
+
 
 [project.optional-dependencies]
 dev = ["pytest", "httpx", "ruff"]
