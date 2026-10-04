@@ -1,0 +1,1 @@
+#porteiro, envia mensagens do gestor ao jev e recebe uma opção de cardapio ( a ser testado)

@@ -1,0 +1,1 @@
+# rotas que o front ira consumir para o chat

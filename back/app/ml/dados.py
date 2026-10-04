@@ -1,0 +1,1 @@
+#consultas que montam as series e matrizes que serão ingeridas pelos modelos, separado do s modelos para lerem da mesma forma

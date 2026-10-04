@@ -1,0 +1,1 @@
+# definição de tools(nome, desc, parametros) e ligação a cada uma com a função em ml/

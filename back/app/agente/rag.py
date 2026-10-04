@@ -1,0 +1,1 @@
+# busca nos documentos da cidade quando há anomalia (vai ser testado) --> motivo principal : informações possivelmente extras que agreguem as respostas do modelo llm 

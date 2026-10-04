@@ -1,0 +1,1 @@
+# cliente da llm(texto e function calling)

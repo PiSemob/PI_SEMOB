@@ -1,0 +1,1 @@
+# catalogar os 11 tipos de relatorio (cada arquivo de dado tem 11 files)

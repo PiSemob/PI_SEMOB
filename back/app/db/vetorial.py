@@ -1,0 +1,1 @@
+# conexão com o chroma ou qqlr outro vetorial para rag

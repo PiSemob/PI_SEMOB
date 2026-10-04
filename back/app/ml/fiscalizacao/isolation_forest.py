@@ -1,0 +1,1 @@
+# detecção de anomalia por casos raros 

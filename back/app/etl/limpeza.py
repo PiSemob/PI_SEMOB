@@ -1,0 +1,1 @@
+#le o banco, padroniza, normaliza, remode duplicatas e etc 
