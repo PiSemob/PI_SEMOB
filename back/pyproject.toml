@@ -13,7 +13,11 @@ dependencies = [
     "pandas",
     "lxml",
     "pymongo",
+      "pymongo",
+    "sqlalchemy",
+    "pg8000",
 ]
+
 
 
 
