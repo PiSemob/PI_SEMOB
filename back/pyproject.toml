@@ -12,7 +12,9 @@ dependencies = [
     "pydantic-settings",
     "pandas",
     "lxml",
+    "pymongo",
 ]
+
 
 
 [project.optional-dependencies]
