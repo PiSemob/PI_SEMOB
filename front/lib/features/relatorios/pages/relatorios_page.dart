@@ -154,7 +154,7 @@ class _RelatoriosPageState extends ConsumerState<RelatoriosPage> {
                           width: largura,
                           child: _CardFormato(
                             formato: f,
-                            onTap: () => _avisar('A exportação em ${f.$2}'),
+                            onTap: () => _avisar('A exportação em ${f.$1}'),
                           ),
                         ),
                     ],
@@ -241,7 +241,7 @@ class _CardModelo extends StatelessWidget {
 class _CardFormato extends StatelessWidget {
   const _CardFormato({required this.formato, required this.onTap});
 
-  final (String, String, String) formato;
+  final (String, String) formato;
   final VoidCallback onTap;
 
   @override
@@ -262,11 +262,10 @@ class _CardFormato extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
-              Text(formato.$1, style: const TextStyle(fontSize: 20)),
               const SizedBox(height: AppSpacing.sm),
-              Text(formato.$2, style: AppTextStyles.label),
+              Text(formato.$1, style: AppTextStyles.label),
               const SizedBox(height: AppSpacing.xs),
-              Text(formato.$3, style: AppTextStyles.caption),
+              Text(formato.$2, style: AppTextStyles.caption),
             ],
           ),
         ),
