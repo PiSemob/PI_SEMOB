@@ -35,12 +35,82 @@ class AppCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppSpacing.radius),
         side: const BorderSide(color: AppColors.border),
       ),
-      child: Padding(
-        padding: padding ?? const EdgeInsets.all(AppSpacing.md),
-        child: child,
+      // As marcas ficam dentro do Material para terem exatamente o tamanho do card.
+      child: CustomPaint(
+        foregroundPainter: const _CantosPainter(),
+        child: Padding(
+          padding: padding ?? const EdgeInsets.all(AppSpacing.md),
+          child: child,
+        ),
       ),
     );
   }
+}
+
+/// Marcas de registro nos quatro cantos do card: um traço curto e mais escuro
+/// sobre a borda, como nas molduras de um painel técnico.
+class _CantosPainter extends CustomPainter {
+  const _CantosPainter();
+
+  static const double _tamanho = 7;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final Paint traco = Paint()
+      ..color = AppColors.secondary
+      ..strokeWidth = 1;
+    // A borda do card é desenhada por cima do conteúdo, então as marcas ficam
+    // 1,5 px para dentro, encostadas nela.
+    const double m = 1.5;
+    final double w = size.width - m;
+    final double h = size.height - m;
+
+    for (final (double x, double y, double dx, double dy) in <(double, double, double, double)>[
+      (m, m, 1, 1),
+      (w, m, -1, 1),
+      (m, h, 1, -1),
+      (w, h, -1, -1),
+    ]) {
+      canvas.drawLine(Offset(x, y), Offset(x + dx * _tamanho, y), traco);
+      canvas.drawLine(Offset(x, y), Offset(x, y + dy * _tamanho), traco);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+/// Faixa de listras diagonais usada como separador, no lugar de uma linha lisa.
+class Hachura extends StatelessWidget {
+  const Hachura({super.key, this.altura = 8});
+
+  final double altura;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: altura,
+      width: double.infinity,
+      child: const ClipRect(child: CustomPaint(painter: _HachuraPainter())),
+    );
+  }
+}
+
+class _HachuraPainter extends CustomPainter {
+  const _HachuraPainter();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final Paint traco = Paint()
+      ..color = AppColors.border
+      ..strokeWidth = 1;
+    for (double x = -size.height; x < size.width; x += 5) {
+      canvas.drawLine(Offset(x, size.height), Offset(x + size.height, 0), traco);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
 class AppMetricCard extends StatelessWidget {
@@ -87,12 +157,11 @@ class AppMetricCard extends StatelessWidget {
               if (icone != null) ...<Widget>[
                 const SizedBox(width: AppSpacing.sm),
                 Container(
-                  padding: const EdgeInsets.all(AppSpacing.sm),
+                  padding: const EdgeInsets.all(6),
                   decoration: BoxDecoration(
-                    color: destaque.withValues(alpha: 0.10),
-                    borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+                    border: Border.all(color: AppColors.border),
                   ),
-                  child: Icon(icone, size: 16, color: destaque),
+                  child: Icon(icone, size: 14, color: destaque),
                 ),
               ],
             ],
@@ -256,9 +325,11 @@ class AppSectionTitle extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                Text(titulo, style: AppTextStyles.section),
-                if (subtitulo != null)
+                Text(titulo.toUpperCase(), style: AppTextStyles.section),
+                if (subtitulo != null) ...<Widget>[
+                  const SizedBox(height: 2),
                   Text(subtitulo!, style: AppTextStyles.caption),
+                ],
               ],
             ),
           ),
@@ -335,25 +406,46 @@ class GradeCards extends StatelessWidget {
   }
 }
 
+/// Caminhos das imagens de logo. Os arquivos ficam em front/assets/logos/.
+/// Enquanto um arquivo não existir, o app mostra uma marca desenhada no lugar.
+class AppLogos {
+  const AppLogos._();
+
+  static const String ferret = 'assets/logos/ferret.png';
+  static const String scs = 'assets/logos/scs.png';
+}
+
+/// Logo do Ferret: a imagem (ou a marca reserva) e o nome ao lado.
 class AppLogo extends StatelessWidget {
   const AppLogo({super.key, this.escuro = false, this.compacto = false});
 
+  /// Mantido para as telas que já passam este parâmetro. Com o tema claro, o
+  /// logo tem a mesma aparência nos dois casos.
   final bool escuro;
   final bool compacto;
 
   @override
   Widget build(BuildContext context) {
-    final Widget marca = Container(
-      height: compacto ? 36 : 40,
-      width: compacto ? 36 : 40,
-      decoration: BoxDecoration(
-        color: escuro ? AppColors.sidebar : Colors.white,
-        borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-      ),
-      child: Icon(
-        Icons.pets,
-        size: compacto ? 18 : 20,
-        color: escuro ? Colors.white : AppColors.sidebar,
+    final double lado = compacto ? 36 : 40;
+
+    final Widget marca = SizedBox(
+      height: lado,
+      width: lado,
+      child: Image.asset(
+        AppLogos.ferret,
+        fit: BoxFit.contain,
+        errorBuilder: (BuildContext _, Object __, StackTrace? ___) => Container(
+          alignment: Alignment.center,
+          color: AppColors.ink,
+          child: Text(
+            'F',
+            style: TextStyle(
+              fontSize: compacto ? 18 : 20,
+              fontWeight: FontWeight.w700,
+              color: Colors.white,
+            ),
+          ),
+        ),
       ),
     );
 
@@ -368,20 +460,21 @@ class AppLogo extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
-            Text(
-              'Ferret',
+            const Text(
+              '[FERRET]',
               style: TextStyle(
-                fontSize: 19,
-                fontWeight: FontWeight.w700,
+                fontSize: 17,
+                fontWeight: FontWeight.w600,
                 height: 1.1,
-                color: escuro ? AppColors.textPrimary : Colors.white,
+                letterSpacing: 1.0,
+                color: AppColors.textPrimary,
               ),
             ),
             Text(
               'BI PLATFORM',
               style: AppTextStyles.overline.copyWith(
-                fontSize: 10,
-                letterSpacing: 1.4,
+                fontSize: 9.5,
+                letterSpacing: 1.6,
                 color: AppColors.accent,
               ),
             ),
@@ -392,6 +485,74 @@ class AppLogo extends StatelessWidget {
   }
 }
 
+/// Logo da Prefeitura de São Caetano do Sul, com a legenda da secretaria.
+class LogoScs extends StatelessWidget {
+  const LogoScs({super.key, this.altura = 34, this.comLegenda = true});
+
+  final double altura;
+  final bool comLegenda;
+
+  @override
+  Widget build(BuildContext context) {
+    final Widget imagem = SizedBox(
+      height: altura,
+      child: Image.asset(
+        AppLogos.scs,
+        fit: BoxFit.contain,
+        errorBuilder: (BuildContext _, Object __, StackTrace? ___) => Container(
+          height: altura,
+          width: altura,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(border: Border.all(color: AppColors.ink)),
+          child: const Text(
+            'SCS',
+            style: TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 0.5,
+              color: AppColors.ink,
+            ),
+          ),
+        ),
+      ),
+    );
+
+    if (!comLegenda) return imagem;
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: <Widget>[
+        imagem,
+        const SizedBox(width: AppSpacing.sm),
+        Flexible(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              Text(
+                'SÃO CAETANO DO SUL',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: AppTextStyles.overline.copyWith(
+                  color: AppColors.textPrimary,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              Text(
+                'SEMOB · MOBILIDADE URBANA',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: AppTextStyles.overline.copyWith(fontSize: 9),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Fundo do painel de marca (tela de login): grade técnica e uma mira.
 class FundoMarca extends StatelessWidget {
   const FundoMarca({super.key, required this.child});
 
@@ -406,17 +567,20 @@ class FundoMarca extends StatelessWidget {
           end: Alignment.bottomRight,
           colors: <Color>[AppColors.brandTop, AppColors.brandBottom],
         ),
+        border: Border(right: BorderSide(color: AppColors.border)),
       ),
-      child: CustomPaint(painter: _GradePainter(), child: child),
+      child: CustomPaint(painter: const _GradePainter(), child: child),
     );
   }
 }
 
 class _GradePainter extends CustomPainter {
+  const _GradePainter();
+
   @override
   void paint(Canvas canvas, Size size) {
     final Paint linha = Paint()
-      ..color = Colors.white.withValues(alpha: 0.04)
+      ..color = AppColors.ink.withValues(alpha: 0.05)
       ..strokeWidth = 1;
 
     const double passo = 44;
@@ -427,18 +591,45 @@ class _GradePainter extends CustomPainter {
       canvas.drawLine(Offset(0, y), Offset(size.width, y), linha);
     }
 
-    final Offset centro = Offset(size.width * 0.75, size.height * 0.25);
-    final double raio = size.height * 0.4;
-    canvas.drawCircle(
-      centro,
-      raio,
-      Paint()
-        ..shader = RadialGradient(
-          colors: <Color>[
-            AppColors.accent.withValues(alpha: 0.10),
-            Colors.transparent,
-          ],
-        ).createShader(Rect.fromCircle(center: centro, radius: raio)),
+    // Mira: duas linhas que cruzam a tela, um círculo tracejado e os quatro
+    // cantos de uma moldura em volta do ponto.
+    final Offset centro = Offset(size.width * 0.76, size.height * 0.17);
+    final Paint mira = Paint()
+      ..color = AppColors.ink.withValues(alpha: 0.28)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1;
+
+    canvas.drawLine(Offset(0, centro.dy), Offset(size.width, centro.dy), linha);
+    canvas.drawLine(Offset(centro.dx, 0), Offset(centro.dx, size.height), linha);
+
+    const double raio = 46;
+    const int tracos = 28;
+    for (int i = 0; i < tracos; i += 2) {
+      canvas.drawArc(
+        Rect.fromCircle(center: centro, radius: raio),
+        i * 2 * 3.141592653589793 / tracos,
+        2 * 3.141592653589793 / tracos,
+        false,
+        mira,
+      );
+    }
+
+    const double meio = 78;
+    const double canto = 22;
+    for (final (double sx, double sy) in <(double, double)>[
+      (-1, -1),
+      (1, -1),
+      (-1, 1),
+      (1, 1),
+    ]) {
+      final Offset p = centro + Offset(sx * meio, sy * meio);
+      canvas.drawLine(p, p - Offset(sx * canto, 0), mira);
+      canvas.drawLine(p, p - Offset(0, sy * canto), mira);
+    }
+
+    canvas.drawRect(
+      Rect.fromCenter(center: centro, width: 6, height: 6),
+      Paint()..color = AppColors.accent,
     );
   }
 
@@ -454,15 +645,14 @@ class ChipMarca extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.06),
-        borderRadius: BorderRadius.circular(AppSpacing.radiusPill),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.14)),
+        color: AppColors.surface,
+        border: Border.all(color: AppColors.border),
       ),
       child: Text(
-        texto,
-        style: const TextStyle(fontSize: 12, color: AppColors.accent),
+        texto.toUpperCase(),
+        style: AppTextStyles.overline.copyWith(color: AppColors.textPrimary),
       ),
     );
   }

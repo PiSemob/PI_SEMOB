@@ -94,10 +94,10 @@ class _PainelMarca extends StatelessWidget {
                   'Plataforma unificada de Business Intelligence e IA '
                   'para monitoramento, análise e suporte à decisão da '
                   'operação municipal de São Caetano do Sul.',
-                  style: TextStyle(
-                    fontSize: 14,
+                  style: const TextStyle(
+                    fontSize: 13,
                     height: 1.6,
-                    color: Colors.white.withValues(alpha: 0.72),
+                    color: AppColors.textSecondary,
                   ),
                 ),
                 const SizedBox(height: AppSpacing.lg),
@@ -123,32 +123,18 @@ class _CardParceiro extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(AppSpacing.md),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.06),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.14)),
-      ),
+    return const AppCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
+          Text('PARCEIRO INSTITUCIONAL', style: AppTextStyles.overline),
+          SizedBox(height: AppSpacing.sm),
+          LogoScs(altura: 40),
+          SizedBox(height: AppSpacing.sm),
           Text(
-            'PARCEIRO INSTITUCIONAL',
-            style: AppTextStyles.overline.copyWith(
-              color: Colors.white.withValues(alpha: 0.55),
-            ),
-          ),
-          const SizedBox(height: AppSpacing.xs),
-          const Text(
             'SEMOB-SCS · Instituto Mauá de Tecnologia',
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              color: Colors.white,
-            ),
+            style: AppTextStyles.label,
           ),
         ],
       ),
@@ -247,8 +233,10 @@ class _AvisoDemo extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: AppColors.primary.withValues(alpha: 0.10),
-        borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+        color: AppColors.surface,
+        border: const Border(
+          left: BorderSide(color: AppColors.accent, width: 3),
+        ),
       ),
       child: const Column(
         crossAxisAlignment: CrossAxisAlignment.start,
