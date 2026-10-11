@@ -194,7 +194,7 @@ class _Arquitetura extends StatelessWidget {
         'Geração de Dashboards',
       ]
     ),
-    ('SAÍDAS', <String>['Dashboard BI', 'Alertas', 'Relatórios IA', 'MOBI AI']),
+    ('SAÍDAS', <String>['Dashboard BI', 'Alertas', 'Relatórios IA', 'Ferret Jr']),
   ];
 
   @override

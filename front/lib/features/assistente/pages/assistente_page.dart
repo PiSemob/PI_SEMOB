@@ -124,7 +124,7 @@ class _CabecalhoAgente extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
-                Text('MOBI AI', style: AppTextStyles.section),
+                Text('FERRET JR', style: AppTextStyles.section),
                 Text(
                   'Conectado · Dados operacionais de 15/09/2026',
                   maxLines: 1,
@@ -222,7 +222,7 @@ class _Sugestoes extends StatelessWidget {
               const Icon(Icons.smart_toy_outlined,
                   size: 40, color: AppColors.primary),
               const SizedBox(height: AppSpacing.sm),
-              const Text('Assistente Ferret', style: AppTextStyles.title),
+              const Text('Ferret Jr', style: AppTextStyles.title),
               const Text(
                 'Pergunte sobre demanda, receita, frota ou quilometragem.',
                 style: AppTextStyles.caption,

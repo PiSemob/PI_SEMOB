@@ -15,7 +15,7 @@ import '../../features/receita/pages/receita_page.dart';
 import '../../features/relatorios/pages/relatorios_page.dart';
 import '../../shared/widgets/app_shell.dart';
 
-/// Rotas do MOBI.AI. Sem guard de autenticacao: o login e apenas visual.
+/// Rotas do Ferret. Sem guard de autenticacao: o login e apenas visual.
 final GoRouter appRouter = GoRouter(
   initialLocation: '/login',
   routes: <RouteBase>[

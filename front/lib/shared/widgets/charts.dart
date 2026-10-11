@@ -40,6 +40,9 @@ Widget _rotuloEixoX(List<PontoSerie> serie, double value, TitleMeta meta) {
   if (value != value.roundToDouble()) return const SizedBox.shrink();
   final int i = value.round();
   if (i < 0 || i >= serie.length) return const SizedBox.shrink();
+  // Com muitos pontos, mostra só um rótulo a cada `passo`, para não sobrepor.
+  final int passo = (serie.length / 6).ceil();
+  if (i % passo != 0) return const SizedBox.shrink();
   return SideTitleWidget(
     axisSide: meta.axisSide,
     child: Text(serie[i].rotulo, style: AppTextStyles.caption),
@@ -61,7 +64,7 @@ FlTitlesData _titulos(List<PontoSerie> serie) => FlTitlesData(
         sideTitles: SideTitles(
           showTitles: true,
           reservedSize: 28,
-          interval: (serie.length / 8).ceilToDouble(),
+          interval: 1,
           getTitlesWidget: (double v, TitleMeta m) => _rotuloEixoX(serie, v, m),
         ),
       ),
@@ -78,7 +81,7 @@ FlGridData get _grade => FlGridData(
       show: true,
       drawVerticalLine: false,
       getDrawingHorizontalLine: (double _) =>
-          const FlLine(color: AppColors.border, strokeWidth: 1),
+          const FlLine(color: AppColors.border, strokeWidth: 1, dashArray: <int>[2, 4]),
     );
 
 class GraficoLinha extends StatelessWidget {
@@ -105,15 +108,14 @@ class GraficoLinha extends StatelessWidget {
         for (int i = 0; i < dados.length; i++)
           FlSpot(i.toDouble(), dados[i].valor),
       ],
-      isCurved: true,
-      curveSmoothness: 0.25,
+      isCurved: false,
       color: cor,
-      barWidth: 2.5,
+      barWidth: 1.6,
       dashArray: tracejada ? <int>[6, 4] : null,
       dotData: const FlDotData(show: false),
       belowBarData: BarAreaData(
         show: !tracejada,
-        color: cor.withValues(alpha: 0.10),
+        color: cor.withValues(alpha: 0.06),
       ),
     );
   }
@@ -177,16 +179,15 @@ class GraficoBarras extends StatelessWidget {
                 BarChartRodData(
                   toY: serie[i].valor,
                   color: cor,
-                  width: serieSecundaria == null ? 18 : 10,
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(4)),
+                  width: serieSecundaria == null ? 14 : 8,
+                  borderRadius: BorderRadius.zero,
                 ),
                 if (serieSecundaria != null && i < serieSecundaria!.length)
                   BarChartRodData(
                     toY: serieSecundaria![i].valor,
                     color: corSecundaria,
-                    width: 10,
-                    borderRadius:
-                        const BorderRadius.vertical(top: Radius.circular(4)),
+                    width: 8,
+                    borderRadius: BorderRadius.zero,
                   ),
               ],
             ),
@@ -275,9 +276,9 @@ class LegendaItem extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
         Container(
-          height: 10,
-          width: 10,
-          decoration: BoxDecoration(color: cor, shape: BoxShape.circle),
+          height: 8,
+          width: 8,
+          color: cor,
         ),
         const SizedBox(width: AppSpacing.sm),
         Flexible(

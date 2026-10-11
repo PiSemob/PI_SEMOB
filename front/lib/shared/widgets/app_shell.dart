@@ -86,10 +86,10 @@ const List<NavItem> navItems = <NavItem>[
   ),
   NavItem(
     rota: '/assistente',
-    label: 'MOBI AI',
+    label: 'Ferret Jr',
     icone: Icons.auto_awesome_outlined,
     grupo: 'DADOS & IA',
-    titulo: 'MOBI AI',
+    titulo: 'Ferret Jr',
     subtitulo: 'Assistente inteligente da operação',
     badge: 'IA',
   ),
@@ -119,6 +119,15 @@ const List<NavItem> navItems = <NavItem>[
   ),
 ];
 
+const double _larguraAberta = 264;
+const double _larguraEncolhida = 64;
+const Duration _duracaoMenu = Duration(milliseconds: 160);
+
+/// Verdadeiro quando a barra lateral está fixada aberta. Falso quando está
+/// encolhida (só os ícones) e abre apenas enquanto o mouse está em cima.
+final StateProvider<bool> sidebarFixaProvider =
+    StateProvider<bool>((ref) => true);
+
 class AppShell extends ConsumerWidget {
   const AppShell({super.key, required this.child, required this.rotaAtual});
 
@@ -137,17 +146,31 @@ class AppShell extends ConsumerWidget {
     final NavItem atual = navItems[_indice];
 
     if (largo) {
+      final bool fixa = ref.watch(sidebarFixaProvider);
       return Scaffold(
-        body: Row(
+        // A barra fica por cima do conteúdo. Encolhida, ela ocupa só a faixa
+        // dos ícones; ao abrir com o mouse, cobre parte da tela sem empurrar
+        // os gráficos.
+        body: Stack(
           children: <Widget>[
-            _Sidebar(indice: _indice),
-            Expanded(
+            AnimatedPadding(
+              duration: _duracaoMenu,
+              curve: Curves.easeOut,
+              padding: EdgeInsets.only(
+                left: fixa ? _larguraAberta : _larguraEncolhida,
+              ),
               child: Column(
                 children: <Widget>[
                   _Header(item: atual),
                   Expanded(child: child),
                 ],
               ),
+            ),
+            Positioned(
+              left: 0,
+              top: 0,
+              bottom: 0,
+              child: _Sidebar(indice: _indice),
             ),
           ],
         ),
@@ -175,14 +198,103 @@ class AppShell extends ConsumerWidget {
   }
 }
 
-class _Sidebar extends ConsumerWidget {
+class _Sidebar extends ConsumerStatefulWidget {
   const _Sidebar({required this.indice, this.dentroDoDrawer = false});
 
   final int indice;
   final bool dentroDoDrawer;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_Sidebar> createState() => _SidebarState();
+}
+
+class _SidebarState extends ConsumerState<_Sidebar> {
+  bool _mouseEmCima = false;
+
+  void _irPara(NavItem item) {
+    if (widget.dentroDoDrawer) Navigator.of(context).pop();
+    context.go(item.rota);
+  }
+
+  void _alternarFixa(bool fixa) {
+    ref.read(sidebarFixaProvider.notifier).state = !fixa;
+    // Ao encolher, fecha na hora, mesmo com o mouse ainda sobre o botão.
+    if (fixa) setState(() => _mouseEmCima = false);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (widget.dentroDoDrawer) {
+      return ColoredBox(color: AppColors.sidebar, child: _aberta(fixa: null));
+    }
+
+    final bool fixa = ref.watch(sidebarFixaProvider);
+    final bool aberta = fixa || _mouseEmCima;
+    final double largura = aberta ? _larguraAberta : _larguraEncolhida;
+
+    return MouseRegion(
+      onEnter: (_) => setState(() => _mouseEmCima = true),
+      onExit: (_) => setState(() => _mouseEmCima = false),
+      child: AnimatedContainer(
+        duration: _duracaoMenu,
+        curve: Curves.easeOut,
+        width: largura,
+        clipBehavior: Clip.hardEdge,
+        decoration: BoxDecoration(
+          color: AppColors.sidebar,
+          border: const Border(right: BorderSide(color: AppColors.border)),
+          // Sombra só quando a barra está aberta por cima do conteúdo.
+          boxShadow: aberta && !fixa
+              ? <BoxShadow>[
+                  BoxShadow(
+                    color: AppColors.ink.withValues(alpha: 0.12),
+                    blurRadius: 18,
+                    offset: const Offset(4, 0),
+                  ),
+                ]
+              : null,
+        ),
+        // O conteúdo é desenhado já na largura final e a barra o recorta
+        // enquanto anima. Sem isso, os textos quebrariam durante a animação.
+        child: OverflowBox(
+          alignment: Alignment.centerLeft,
+          minWidth: largura,
+          maxWidth: largura,
+          child: aberta ? _aberta(fixa: fixa) : _encolhida(),
+        ),
+      ),
+    );
+  }
+
+  /// Só o logo do Ferret e os ícones.
+  Widget _encolhida() {
+    return Column(
+      children: <Widget>[
+        const Padding(
+          padding: EdgeInsets.symmetric(vertical: AppSpacing.md),
+          child: AppLogo(compacto: true),
+        ),
+        const Hachura(),
+        Expanded(
+          child: ListView(
+            padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
+            children: <Widget>[
+              for (int i = 0; i < navItems.length; i++)
+                _ItemNavIcone(
+                  item: navItems[i],
+                  selecionado: i == widget.indice,
+                  onTap: () => _irPara(navItems[i]),
+                ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// Barra completa. `fixa` nulo significa "dentro do menu do celular", onde
+  /// não há botão de encolher.
+  Widget _aberta({required bool? fixa}) {
     final String? usuario = ref.watch(sessaoProvider);
 
     final List<Widget> itens = <Widget>[];
@@ -200,9 +312,8 @@ class _Sidebar extends ConsumerWidget {
               AppSpacing.sm,
             ),
             child: Text(
-              n.grupo,
-              style:
-                  AppTextStyles.overline.copyWith(color: AppColors.sidebarText),
+              '[${n.grupo}]',
+              style: AppTextStyles.overline.copyWith(color: AppColors.textMuted),
             ),
           ),
         );
@@ -210,48 +321,79 @@ class _Sidebar extends ConsumerWidget {
       itens.add(
         _ItemNav(
           item: n,
-          selecionado: i == indice,
-          onTap: () {
-            if (dentroDoDrawer) Navigator.of(context).pop();
-            context.go(n.rota);
-          },
+          selecionado: i == widget.indice,
+          onTap: () => _irPara(n),
         ),
       );
     }
 
-    final Widget conteudo = Column(
+    return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
-        const Padding(
-          padding: EdgeInsets.all(AppSpacing.md),
-          child: AppLogo(),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.md,
+            AppSpacing.md,
+            AppSpacing.sm,
+            AppSpacing.md,
+          ),
+          child: Row(
+            children: <Widget>[
+              const Expanded(
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: AppLogo(),
+                ),
+              ),
+              if (fixa != null)
+                IconButton(
+                  tooltip: fixa ? 'Encolher menu' : 'Fixar menu aberto',
+                  visualDensity: VisualDensity.compact,
+                  icon: Icon(
+                    fixa
+                        ? Icons.keyboard_double_arrow_left
+                        : Icons.push_pin_outlined,
+                    size: 18,
+                    color: AppColors.sidebarText,
+                  ),
+                  onPressed: () => _alternarFixa(fixa),
+                ),
+            ],
+          ),
         ),
+        const Hachura(),
         Expanded(
           child: ListView(
             padding: const EdgeInsets.only(bottom: AppSpacing.md),
             children: itens,
           ),
         ),
-        const Divider(color: Colors.white12, height: 1),
+        const Hachura(),
+        const Padding(
+          padding: EdgeInsets.fromLTRB(
+            AppSpacing.md,
+            AppSpacing.md,
+            AppSpacing.md,
+            AppSpacing.sm,
+          ),
+          child: LogoScs(),
+        ),
+        const Divider(height: 1),
         Padding(
           padding: const EdgeInsets.all(AppSpacing.md),
           child: Row(
             children: <Widget>[
               Container(
-                height: 36,
-                width: 36,
+                height: 34,
+                width: 34,
                 alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: <Color>[AppColors.primary, AppColors.accent],
-                  ),
-                  borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-                ),
+                color: AppColors.ink,
                 child: const Text(
                   'GS',
                   style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 0.5,
                     color: Colors.white,
                   ),
                 ),
@@ -263,11 +405,12 @@ class _Sidebar extends ConsumerWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: <Widget>[
                     const Text(
-                      'Gestor SEMOB',
+                      'GESTOR SEMOB',
                       style: TextStyle(
-                        fontSize: 13,
+                        fontSize: 11.5,
                         fontWeight: FontWeight.w600,
-                        color: Colors.white,
+                        letterSpacing: 0.6,
+                        color: AppColors.textPrimary,
                       ),
                     ),
                     Text(
@@ -286,11 +429,46 @@ class _Sidebar extends ConsumerWidget {
         ),
       ],
     );
+  }
+}
 
-    if (dentroDoDrawer) {
-      return ColoredBox(color: AppColors.sidebar, child: conteudo);
-    }
-    return Container(width: 252, color: AppColors.sidebar, child: conteudo);
+/// Item do menu encolhido: só o ícone, com a mesma barra laranja de seleção.
+class _ItemNavIcone extends StatelessWidget {
+  const _ItemNavIcone({
+    required this.item,
+    required this.selecionado,
+    required this.onTap,
+  });
+
+  final NavItem item;
+  final bool selecionado;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: selecionado ? AppColors.sidebarActive : Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        child: Container(
+          height: 40,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            border: Border(
+              left: BorderSide(
+                width: 3,
+                color: selecionado ? AppColors.accent : Colors.transparent,
+              ),
+            ),
+          ),
+          child: Icon(
+            item.icone,
+            size: 18,
+            color: selecionado ? AppColors.textPrimary : AppColors.sidebarText,
+          ),
+        ),
+      ),
+    );
   }
 }
 
@@ -307,66 +485,62 @@ class _ItemNav extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Color cor = selecionado ? Colors.white : AppColors.sidebarText;
+    final Color cor =
+        selecionado ? AppColors.textPrimary : AppColors.sidebarText;
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
-      child: Material(
-        color: selecionado ? AppColors.sidebarActive : Colors.transparent,
-        borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-          // Sem o overlay explicito, o hover padrao clareia o fundo escuro.
-          overlayColor: WidgetStateProperty.resolveWith<Color?>(
-            (Set<WidgetState> states) => states.isEmpty
-                ? null
-                : (selecionado
-                    ? AppColors.sidebarActive
-                    : AppColors.sidebarHover),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.md,
-              vertical: 11,
+    return Material(
+      color: selecionado ? AppColors.sidebarActive : Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        overlayColor: WidgetStateProperty.resolveWith<Color?>(
+          (Set<WidgetState> states) => states.isEmpty
+              ? null
+              : (selecionado ? AppColors.sidebarActive : AppColors.sidebarHover),
+        ),
+        child: Container(
+          // A barra laranja à esquerda marca o item atual.
+          decoration: BoxDecoration(
+            border: Border(
+              left: BorderSide(
+                width: 3,
+                color: selecionado ? AppColors.accent : Colors.transparent,
+              ),
             ),
-            child: Row(
-              children: <Widget>[
-                Icon(item.icone, size: 19, color: cor),
-                const SizedBox(width: AppSpacing.md),
-                Expanded(
+          ),
+          padding: const EdgeInsets.fromLTRB(13, 10, AppSpacing.md, 10),
+          child: Row(
+            children: <Widget>[
+              Icon(item.icone, size: 16, color: cor),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  item.label.toUpperCase(),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 11.5,
+                    letterSpacing: 0.8,
+                    fontWeight: selecionado ? FontWeight.w600 : FontWeight.w400,
+                    color: cor,
+                  ),
+                ),
+              ),
+              if (item.badge != null)
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  color: AppColors.accent,
                   child: Text(
-                    item.label,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight:
-                          selecionado ? FontWeight.w600 : FontWeight.w400,
-                      color: cor,
+                    item.badge!,
+                    style: const TextStyle(
+                      fontSize: 9.5,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.6,
+                      color: Colors.white,
                     ),
                   ),
                 ),
-                if (item.badge != null)
-                  Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: AppColors.accent,
-                      borderRadius:
-                          BorderRadius.circular(AppSpacing.radiusPill),
-                    ),
-                    child: Text(
-                      item.badge!,
-                      style: const TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-              ],
-            ),
+            ],
           ),
         ),
       ),
@@ -378,6 +552,11 @@ class _Header extends StatelessWidget {
   const _Header({required this.item});
 
   final NavItem item;
+
+  /// 'DADOS & IA' vira 'Dados & ia': só a primeira letra fica maiúscula.
+  static String _capitalizar(String texto) => texto.isEmpty
+      ? texto
+      : texto[0].toUpperCase() + texto.substring(1).toLowerCase();
 
   @override
   Widget build(BuildContext context) {
@@ -392,9 +571,14 @@ class _Header extends StatelessWidget {
       ),
       child: Row(
         children: <Widget>[
+          // Caminho no estilo "Ferret/Operação/Dashboard", como em um terminal.
+          Text(
+            'Ferret/${_capitalizar(item.grupo)}/',
+            style: AppTextStyles.caption.copyWith(color: AppColors.textMuted),
+          ),
           Text(item.titulo, style: AppTextStyles.title),
           const SizedBox(width: AppSpacing.md),
-          Container(width: 1, height: 20, color: AppColors.border),
+          Container(width: 1, height: 18, color: AppColors.border),
           const SizedBox(width: AppSpacing.md),
           Expanded(
             child: Text(
@@ -441,23 +625,16 @@ class _BadgeAoVivo extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: AppColors.accent.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(AppSpacing.radiusPill),
+        color: AppColors.accentSoft,
+        border: Border.all(color: AppColors.accent),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
-          Container(
-            height: 6,
-            width: 6,
-            decoration: const BoxDecoration(
-              color: AppColors.accent,
-              shape: BoxShape.circle,
-            ),
-          ),
-          const SizedBox(width: AppSpacing.xs),
+          Container(height: 6, width: 6, color: AppColors.accent),
+          const SizedBox(width: 6),
           Text(
             'AO VIVO',
             style: AppTextStyles.overline.copyWith(color: AppColors.accent),

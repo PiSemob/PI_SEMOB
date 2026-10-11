@@ -1,4 +1,4 @@
-\\\ dados ficticios para popular front
+/// dados ficticios para popular front
 library;
 
 import 'package:intl/intl.dart';

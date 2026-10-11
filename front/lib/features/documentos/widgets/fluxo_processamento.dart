@@ -69,10 +69,10 @@ class FluxoProcessamento extends StatelessWidget {
 class _Etapa extends StatelessWidget {
   const _Etapa({required this.etapa, required this.numero});
 
-  final (String, String, String) etapa;
+  final (String, String) etapa;
   final int numero;
 
-  @override
+    @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
@@ -84,15 +84,13 @@ class _Etapa extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
-          Text(etapa.$1, style: const TextStyle(fontSize: 22)),
-          const SizedBox(height: AppSpacing.sm),
           Text(
-            etapa.$2,
+            etapa.$1,
             textAlign: TextAlign.center,
             style: AppTextStyles.label,
           ),
           Text(
-            etapa.$3,
+            etapa.$2,
             textAlign: TextAlign.center,
             style: AppTextStyles.caption,
           ),
@@ -106,3 +104,4 @@ class _Etapa extends StatelessWidget {
     );
   }
 }
+
