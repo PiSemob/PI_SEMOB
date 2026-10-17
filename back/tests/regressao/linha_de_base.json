@@ -1,0 +1,1197 @@
+{
+  "gerada_em": "2026-10-16",
+  "arquivos": {
+    "Agosto_2026/Mensal/Mensal_202608.html": [
+      {
+        "tipo": "resumo_geral",
+        "colunas": [
+          "Data",
+          "diaSem",
+          "nrVeiculos",
+          "nrMaxVeicFx",
+          "nrViagensProgr",
+          "nrViagensRealiz",
+          "Dif Viagens",
+          "kmProd",
+          "kmImprod",
+          "kmTotal"
+        ],
+        "linhas": 32,
+        "gerado_em": "04/09/2026 08:00"
+      }
+    ],
+    "Agosto_2026/Mensal/Mensal_FCV_202608.html": [
+      {
+        "tipo": "fcv",
+        "colunas": [
+          "Data",
+          "manha_p",
+          "manha_r",
+          "tarde_p",
+          "tarde_r",
+          "noite_p",
+          "noite_r",
+          "programadas",
+          "realizadas"
+        ],
+        "linhas": 32,
+        "gerado_em": "04/09/2026 08:00"
+      }
+    ],
+    "Agosto_2026/Mensal/Mensal_FxHr_202608.html": [
+      {
+        "tipo": "partidas_faixa_horaria",
+        "colunas": [
+          "Data",
+          "Linha",
+          "Fx_Hor",
+          "Nr_Veiculos",
+          "Nr_Viagens",
+          "Partidas"
+        ],
+        "linhas": 5599,
+        "gerado_em": "04/09/2026 08:00"
+      }
+    ],
+    "Agosto_2026/Mensal/Mensal_Linhas_202608.html": [
+      {
+        "tipo": "resumo_linha",
+        "colunas": [
+          "Data",
+          "Linha",
+          "kmTotal",
+          "nrViagens"
+        ],
+        "linhas": 280,
+        "gerado_em": "04/09/2026 08:00"
+      }
+    ],
+    "Agosto_2026/Mensal/Mensal_Resumo_FxHr_202608.html": [
+      {
+        "tipo": "resumo_faixa_horaria",
+        "colunas": [
+          "Data",
+          "Fx_Hor",
+          "Nr_Veiculos",
+          "Nr_Viagens"
+        ],
+        "linhas": 652,
+        "gerado_em": "04/09/2026 08:00"
+      }
+    ],
+    "Agosto_2026/Mensal/Mensal_Viag_Ninic_202608.html": [
+      {
+        "tipo": "viagens_nao_iniciadas",
+        "colunas": [
+          "Data",
+          "Linha",
+          "Atendimento",
+          "Prefixo",
+          "Atividade",
+          "Motorista",
+          "Sentido",
+          "Tabela",
+          "statusSaida",
+          "statusChegada",
+          "inicioProgramado",
+          "inicioRealizado",
+          "fimProgramado",
+          "fimRealizado",
+          "kmProd"
+        ],
+        "linhas": 6,
+        "gerado_em": "04/09/2026 08:00"
+      }
+    ],
+    "Agosto_2026/Mensal/Mensal_Viag_NRealiz_202608.html": [
+      {
+        "tipo": "viagens_nao_realizadas",
+        "colunas": [
+          "Data",
+          "Linha",
+          "Atendimento",
+          "Prefixo",
+          "Atividade",
+          "Motorista",
+          "Sentido",
+          "Tabela",
+          "statusSaida",
+          "statusChegada",
+          "inicioProgramado",
+          "inicioRealizado",
+          "fimProgramado",
+          "fimRealizado",
+          "kmProd"
+        ],
+        "linhas": 42,
+        "gerado_em": "04/09/2026 08:00"
+      }
+    ],
+    "Agosto_2026/Mensal/Mensal_Viag_NTerm_202608.html": [
+      {
+        "tipo": "viagens_nao_terminadas",
+        "colunas": [
+          "Data",
+          "Linha",
+          "Atendimento",
+          "Prefixo",
+          "Atividade",
+          "Motorista",
+          "Sentido",
+          "Tabela",
+          "statusSaida",
+          "statusChegada",
+          "inicioProgramado",
+          "inicioRealizado",
+          "fimProgramado",
+          "fimRealizado",
+          "kmProd"
+        ],
+        "linhas": 8,
+        "gerado_em": "04/09/2026 08:00"
+      }
+    ],
+    "Agosto_2026/Mensal/Mensal_Viagens_202608.html": [
+      {
+        "tipo": "viagens",
+        "colunas": [
+          "Data",
+          "Linha",
+          "Prefixo",
+          "Atividade",
+          "Sentido",
+          "Fx_Hor",
+          "inicioRealizado",
+          "fimRealizado",
+          "kmProd",
+          "kmImprod",
+          "kmTotal"
+        ],
+        "linhas": 36752,
+        "gerado_em": "04/09/2026 08:00"
+      }
+    ],
+    "Agosto_2026/Mensal/Passageiros_Mensal.html": [
+      {
+        "tipo": "passageiros",
+        "colunas": [
+          "Mês",
+          "Dia",
+          "Catraca",
+          "Antecipados",
+          "Não Pagantes",
+          "Total Passageiros"
+        ],
+        "linhas": 32,
+        "gerado_em": "04-Set 08:01"
+      }
+    ],
+    "Agosto_2026/Mensal/Saldos_Mensal.html": [
+      {
+        "tipo": "saldos",
+        "colunas": [
+          "Mês",
+          "Dia",
+          "Série",
+          "Créditos transferidos para cartões",
+          "Saldo Final"
+        ],
+        "linhas": 27,
+        "gerado_em": "04-Set 08:01"
+      },
+      {
+        "tipo": "vendas",
+        "colunas": [
+          "Mês",
+          "Dia",
+          "Total Vendas",
+          "Total Utilização",
+          "Crédito Circulante"
+        ],
+        "linhas": 34,
+        "gerado_em": "04-Set 08:01"
+      }
+    ],
+    "Agosto_2026/Quinzenal/Passageiros_Quinzenal.html": [
+      {
+        "tipo": "passageiros",
+        "colunas": [
+          "Mês",
+          "Dia",
+          "Catraca",
+          "Antecipados",
+          "Não Pagantes",
+          "Total Passageiros"
+        ],
+        "linhas": 14,
+        "gerado_em": "15-Ago 07:17"
+      }
+    ],
+    "Agosto_2026/Quinzenal/Quinzenal_202608.html": [
+      {
+        "tipo": "resumo_geral",
+        "colunas": [
+          "Data",
+          "diaSem",
+          "nrVeiculos",
+          "nrMaxVeicFx",
+          "nrViagensProgr",
+          "nrViagensRealiz",
+          "Dif Viagens",
+          "kmProd",
+          "kmImprod",
+          "kmTotal"
+        ],
+        "linhas": 15,
+        "gerado_em": "15/08/2026 07:17"
+      }
+    ],
+    "Agosto_2026/Quinzenal/Quinzenal_FCV_202608.html": [
+      {
+        "tipo": "fcv",
+        "colunas": [
+          "Data",
+          "manha_p",
+          "manha_r",
+          "tarde_p",
+          "tarde_r",
+          "noite_p",
+          "noite_r",
+          "programadas",
+          "realizadas"
+        ],
+        "linhas": 15,
+        "gerado_em": "15/08/2026 07:17"
+      }
+    ],
+    "Agosto_2026/Quinzenal/Quinzenal_FxHr_202608.html": [
+      {
+        "tipo": "partidas_faixa_horaria",
+        "colunas": [
+          "Data",
+          "Linha",
+          "Fx_Hor",
+          "Nr_Veiculos",
+          "Nr_Viagens",
+          "Partidas"
+        ],
+        "linhas": 2532,
+        "gerado_em": "15/08/2026 07:17"
+      }
+    ],
+    "Agosto_2026/Quinzenal/Quinzenal_Linhas_202608.html": [
+      {
+        "tipo": "resumo_linha",
+        "colunas": [
+          "Data",
+          "Linha",
+          "kmTotal",
+          "nrViagens"
+        ],
+        "linhas": 127,
+        "gerado_em": "15/08/2026 07:17"
+      }
+    ],
+    "Agosto_2026/Quinzenal/Quinzenal_Resumo_FxHr_202608.html": [
+      {
+        "tipo": "resumo_faixa_horaria",
+        "colunas": [
+          "Data",
+          "Fx_Hor",
+          "Nr_Veiculos",
+          "Nr_Viagens"
+        ],
+        "linhas": 295,
+        "gerado_em": "15/08/2026 07:17"
+      }
+    ],
+    "Agosto_2026/Quinzenal/Quinzenal_Viag_Ninic_202608.html": [
+      {
+        "tipo": "viagens_nao_iniciadas",
+        "colunas": [
+          "Data",
+          "Linha",
+          "Atendimento",
+          "Prefixo",
+          "Atividade",
+          "Motorista",
+          "Sentido",
+          "Tabela",
+          "statusSaida",
+          "statusChegada",
+          "inicioProgramado",
+          "inicioRealizado",
+          "fimProgramado",
+          "fimRealizado",
+          "kmProd"
+        ],
+        "linhas": 6,
+        "gerado_em": "15/08/2026 07:17"
+      }
+    ],
+    "Agosto_2026/Quinzenal/Quinzenal_Viag_NRealiz_202608.html": [
+      {
+        "tipo": "viagens_nao_realizadas",
+        "colunas": [
+          "Data",
+          "Linha",
+          "Atendimento",
+          "Prefixo",
+          "Atividade",
+          "Motorista",
+          "Sentido",
+          "Tabela",
+          "statusSaida",
+          "statusChegada",
+          "inicioProgramado",
+          "inicioRealizado",
+          "fimProgramado",
+          "fimRealizado",
+          "kmProd"
+        ],
+        "linhas": 25,
+        "gerado_em": "15/08/2026 07:17"
+      }
+    ],
+    "Agosto_2026/Quinzenal/Quinzenal_Viag_NTerm_202608.html": [
+      {
+        "tipo": "viagens_nao_terminadas",
+        "colunas": [
+          "Data",
+          "Linha",
+          "Atendimento",
+          "Prefixo",
+          "Atividade",
+          "Motorista",
+          "Sentido",
+          "Tabela",
+          "statusSaida",
+          "statusChegada",
+          "inicioProgramado",
+          "inicioRealizado",
+          "fimProgramado",
+          "fimRealizado",
+          "kmProd"
+        ],
+        "linhas": 8,
+        "gerado_em": "15/08/2026 07:17"
+      }
+    ],
+    "Agosto_2026/Quinzenal/Quinzenal_Viagens_202608.html": [
+      {
+        "tipo": "viagens",
+        "colunas": [
+          "Data",
+          "Linha",
+          "Prefixo",
+          "Atividade",
+          "Sentido",
+          "Fx_Hor",
+          "inicioRealizado",
+          "fimRealizado",
+          "kmProd",
+          "kmImprod",
+          "kmTotal"
+        ],
+        "linhas": 16820,
+        "gerado_em": "15/08/2026 07:17"
+      }
+    ],
+    "Agosto_2026/Quinzenal/Saldos_Quinzenal.html": [
+      {
+        "tipo": "saldos",
+        "colunas": [
+          "Mês",
+          "Dia",
+          "Série",
+          "Créditos transferidos para cartões",
+          "Saldo Final"
+        ],
+        "linhas": 11,
+        "gerado_em": "15-Ago 07:17"
+      },
+      {
+        "tipo": "vendas",
+        "colunas": [
+          "Mês",
+          "Dia",
+          "Total Vendas",
+          "Total Utilização",
+          "Crédito Circulante"
+        ],
+        "linhas": 15,
+        "gerado_em": "15-Ago 07:17"
+      }
+    ],
+    "Julho_2026/Mensal/Mensal_202607.html": [
+      {
+        "tipo": "resumo_geral",
+        "colunas": [
+          "Data",
+          "diaSem",
+          "nrVeiculos",
+          "nrMaxVeicFx",
+          "nrViagensProgr",
+          "nrViagensRealiz",
+          "Dif Viagens",
+          "kmProd",
+          "kmImprod",
+          "kmTotal"
+        ],
+        "linhas": 32,
+        "gerado_em": "04/08/2026 14:37"
+      }
+    ],
+    "Julho_2026/Mensal/Mensal_FCV_202607.html": [
+      {
+        "tipo": "fcv",
+        "colunas": [
+          "Data",
+          "manha_p",
+          "manha_r",
+          "tarde_p",
+          "tarde_r",
+          "noite_p",
+          "noite_r",
+          "programadas",
+          "realizadas"
+        ],
+        "linhas": 32,
+        "gerado_em": "04/08/2026 14:37"
+      }
+    ],
+    "Julho_2026/Mensal/Mensal_FxHr_202607.html": [
+      {
+        "tipo": "partidas_faixa_horaria",
+        "colunas": [
+          "Data",
+          "Linha",
+          "Fx_Hor",
+          "Nr_Veiculos",
+          "Nr_Viagens",
+          "Partidas"
+        ],
+        "linhas": 5883,
+        "gerado_em": "04/08/2026 14:37"
+      }
+    ],
+    "Julho_2026/Mensal/Mensal_Linhas_202607.html": [
+      {
+        "tipo": "resumo_linha",
+        "colunas": [
+          "Data",
+          "Linha",
+          "kmTotal",
+          "nrViagens"
+        ],
+        "linhas": 294,
+        "gerado_em": "04/08/2026 14:37"
+      }
+    ],
+    "Julho_2026/Mensal/Mensal_Resumo_FxHr_202607.html": [
+      {
+        "tipo": "resumo_faixa_horaria",
+        "colunas": [
+          "Data",
+          "Fx_Hor",
+          "Nr_Veiculos",
+          "Nr_Viagens"
+        ],
+        "linhas": 652,
+        "gerado_em": "04/08/2026 14:37"
+      }
+    ],
+    "Julho_2026/Mensal/Mensal_Viag_Ninic_202607.html": [
+      {
+        "tipo": "viagens_nao_iniciadas",
+        "colunas": [
+          "Data",
+          "Linha",
+          "Atendimento",
+          "Prefixo",
+          "Atividade",
+          "Motorista",
+          "Sentido",
+          "Tabela",
+          "statusSaida",
+          "statusChegada",
+          "inicioProgramado",
+          "inicioRealizado",
+          "fimProgramado",
+          "fimRealizado",
+          "kmProd"
+        ],
+        "linhas": 3,
+        "gerado_em": "04/08/2026 14:37"
+      }
+    ],
+    "Julho_2026/Mensal/Mensal_Viag_NRealiz_202607.html": [
+      {
+        "tipo": "viagens_nao_realizadas",
+        "colunas": [
+          "Data",
+          "Linha",
+          "Atendimento",
+          "Prefixo",
+          "Atividade",
+          "Motorista",
+          "Sentido",
+          "Tabela",
+          "statusSaida",
+          "statusChegada",
+          "inicioProgramado",
+          "inicioRealizado",
+          "fimProgramado",
+          "fimRealizado",
+          "kmProd"
+        ],
+        "linhas": 50,
+        "gerado_em": "04/08/2026 14:37"
+      }
+    ],
+    "Julho_2026/Mensal/Mensal_Viag_NTerm_202607.html": [
+      {
+        "tipo": "viagens_nao_terminadas",
+        "colunas": [
+          "Data",
+          "Linha",
+          "Atendimento",
+          "Prefixo",
+          "Atividade",
+          "Motorista",
+          "Sentido",
+          "Tabela",
+          "statusSaida",
+          "statusChegada",
+          "inicioProgramado",
+          "inicioRealizado",
+          "fimProgramado",
+          "fimRealizado",
+          "kmProd"
+        ],
+        "linhas": 4,
+        "gerado_em": "04/08/2026 14:37"
+      }
+    ],
+    "Julho_2026/Mensal/Mensal_Viagens_202607.html": [
+      {
+        "tipo": "viagens",
+        "colunas": [
+          "Data",
+          "Linha",
+          "Prefixo",
+          "Atividade",
+          "Sentido",
+          "Fx_Hor",
+          "inicioRealizado",
+          "fimRealizado",
+          "kmProd",
+          "kmImprod",
+          "kmTotal"
+        ],
+        "linhas": 38078,
+        "gerado_em": "04/08/2026 14:37"
+      }
+    ],
+    "Julho_2026/Mensal/Passageiros.html": [
+      {
+        "tipo": "passageiros",
+        "colunas": [
+          "Mês",
+          "Dia",
+          "Catraca",
+          "Antecipados",
+          "Não Pagantes",
+          "Total Passageiros"
+        ],
+        "linhas": 22,
+        "gerado_em": "04-Ago 14:37"
+      }
+    ],
+    "Julho_2026/Mensal/Saldos.html": [
+      {
+        "tipo": "saldos",
+        "colunas": [
+          "Mês",
+          "Dia",
+          "Série",
+          "Créditos transferidos para cartões",
+          "Saldo Final"
+        ],
+        "linhas": 18,
+        "gerado_em": "04-Ago 14:37"
+      },
+      {
+        "tipo": "vendas",
+        "colunas": [
+          "Mês",
+          "Dia",
+          "Total Vendas",
+          "Total Utilização",
+          "Crédito Circulante"
+        ],
+        "linhas": 32,
+        "gerado_em": "04-Ago 14:37"
+      }
+    ],
+    "Setembro_2026/Quinzenal/Passageiros_Quinzenal.html": [
+      {
+        "tipo": "passageiros",
+        "colunas": [
+          "Mês",
+          "Dia",
+          "Catraca",
+          "Antecipados",
+          "Não Pagantes",
+          "Total Passageiros"
+        ],
+        "linhas": 15,
+        "gerado_em": "15-Set 08:01"
+      }
+    ],
+    "Setembro_2026/Quinzenal/Quinzenal_202609.html": [
+      {
+        "tipo": "resumo_geral",
+        "colunas": [
+          "Data",
+          "diaSem",
+          "nrVeiculos",
+          "nrMaxVeicFx",
+          "nrViagensProgr",
+          "nrViagensRealiz",
+          "Dif Viagens",
+          "kmProd",
+          "kmImprod",
+          "kmTotal"
+        ],
+        "linhas": 15,
+        "gerado_em": "15/09/2026 08:00"
+      }
+    ],
+    "Setembro_2026/Quinzenal/Quinzenal_FCV_202609.html": [
+      {
+        "tipo": "fcv",
+        "colunas": [
+          "Data",
+          "manha_p",
+          "manha_r",
+          "tarde_p",
+          "tarde_r",
+          "noite_p",
+          "noite_r",
+          "programadas",
+          "realizadas"
+        ],
+        "linhas": 15,
+        "gerado_em": "15/09/2026 08:00"
+      }
+    ],
+    "Setembro_2026/Quinzenal/Quinzenal_FxHr_202609.html": [
+      {
+        "tipo": "partidas_faixa_horaria",
+        "colunas": [
+          "Data",
+          "Linha",
+          "Fx_Hor",
+          "Nr_Veiculos",
+          "Nr_Viagens",
+          "Partidas"
+        ],
+        "linhas": 2527,
+        "gerado_em": "15/09/2026 08:00"
+      }
+    ],
+    "Setembro_2026/Quinzenal/Quinzenal_Linhas_202609.html": [
+      {
+        "tipo": "resumo_linha",
+        "colunas": [
+          "Data",
+          "Linha",
+          "kmTotal",
+          "nrViagens"
+        ],
+        "linhas": 127,
+        "gerado_em": "15/09/2026 08:00"
+      }
+    ],
+    "Setembro_2026/Quinzenal/Quinzenal_Resumo_FxHr_202609.html": [
+      {
+        "tipo": "resumo_faixa_horaria",
+        "colunas": [
+          "Data",
+          "Fx_Hor",
+          "Nr_Veiculos",
+          "Nr_Viagens"
+        ],
+        "linhas": 295,
+        "gerado_em": "15/09/2026 08:00"
+      }
+    ],
+    "Setembro_2026/Quinzenal/Quinzenal_Viag_Ninic_202609.html": [
+      {
+        "tipo": "viagens_nao_iniciadas",
+        "colunas": [
+          "Data",
+          "Linha",
+          "Atendimento",
+          "Prefixo",
+          "Atividade",
+          "Motorista",
+          "Sentido",
+          "Tabela",
+          "statusSaida",
+          "statusChegada",
+          "inicioProgramado",
+          "inicioRealizado",
+          "fimProgramado",
+          "fimRealizado",
+          "kmProd"
+        ],
+        "linhas": 0,
+        "gerado_em": "15/09/2026 08:00"
+      }
+    ],
+    "Setembro_2026/Quinzenal/Quinzenal_Viag_NRealiz_202609.html": [
+      {
+        "tipo": "viagens_nao_realizadas",
+        "colunas": [
+          "Data",
+          "Linha",
+          "Atendimento",
+          "Prefixo",
+          "Atividade",
+          "Motorista",
+          "Sentido",
+          "Tabela",
+          "statusSaida",
+          "statusChegada",
+          "inicioProgramado",
+          "inicioRealizado",
+          "fimProgramado",
+          "fimRealizado",
+          "kmProd"
+        ],
+        "linhas": 8,
+        "gerado_em": "15/09/2026 08:00"
+      }
+    ],
+    "Setembro_2026/Quinzenal/Quinzenal_Viag_NTerm_202609.html": [
+      {
+        "tipo": "viagens_nao_terminadas",
+        "colunas": [
+          "Data",
+          "Linha",
+          "Atendimento",
+          "Prefixo",
+          "Atividade",
+          "Motorista",
+          "Sentido",
+          "Tabela",
+          "statusSaida",
+          "statusChegada",
+          "inicioProgramado",
+          "inicioRealizado",
+          "fimProgramado",
+          "fimRealizado",
+          "kmProd"
+        ],
+        "linhas": 1,
+        "gerado_em": "15/09/2026 08:00"
+      }
+    ],
+    "Setembro_2026/Quinzenal/Quinzenal_Viagens_202609.html": [
+      {
+        "tipo": "viagens",
+        "colunas": [
+          "Data",
+          "Linha",
+          "Prefixo",
+          "Atividade",
+          "Sentido",
+          "Fx_Hor",
+          "inicioRealizado",
+          "fimRealizado",
+          "kmProd",
+          "kmImprod",
+          "kmTotal"
+        ],
+        "linhas": 16281,
+        "gerado_em": "15/09/2026 08:00"
+      }
+    ],
+    "Setembro_2026/Quinzenal/Saldos_Quinzenal.html": [
+      {
+        "tipo": "saldos",
+        "colunas": [
+          "Mês",
+          "Dia",
+          "Série",
+          "Créditos transferidos para cartões",
+          "Saldo Final"
+        ],
+        "linhas": 15,
+        "gerado_em": "15-Set 08:01"
+      },
+      {
+        "tipo": "vendas",
+        "colunas": [
+          "Mês",
+          "Dia",
+          "Total Vendas",
+          "Total Utilização",
+          "Crédito Circulante"
+        ],
+        "linhas": 15,
+        "gerado_em": "15-Set 08:01"
+      }
+    ]
+  },
+  "tabelas": {
+    "viagens": {
+      "2026-07": {
+        "registros": 36330,
+        "suspeitos": 4,
+        "somas": {
+          "fx_hor": 483217.0,
+          "km_prod": 248321.3,
+          "km_improd": 0.0,
+          "km_total": 248321.3,
+          "duracao_min": 929266.5
+        }
+      },
+      "2026-08": {
+        "registros": 34994,
+        "suspeitos": 0,
+        "somas": {
+          "fx_hor": 466265.0,
+          "km_prod": 261886.8,
+          "km_improd": 0.0,
+          "km_total": 261886.8,
+          "duracao_min": 987930.6
+        }
+      },
+      "2026-09": {
+        "registros": 15489,
+        "suspeitos": 0,
+        "somas": {
+          "fx_hor": 206300.0,
+          "km_prod": 115795.6,
+          "km_improd": 0.0,
+          "km_total": 115795.6,
+          "duracao_min": 434127.7
+        }
+      }
+    },
+    "viagens_improdutivas": {
+      "2026-07": {
+        "registros": 1747,
+        "suspeitos": 0,
+        "somas": {
+          "km_prod": 0.0,
+          "km_improd": 14425.5,
+          "km_total": 14425.5
+        }
+      },
+      "2026-08": {
+        "registros": 1757,
+        "suspeitos": 0,
+        "somas": {
+          "km_prod": 0.0,
+          "km_improd": 13807.7,
+          "km_total": 13807.7
+        }
+      },
+      "2026-09": {
+        "registros": 791,
+        "suspeitos": 0,
+        "somas": {
+          "km_prod": 0.0,
+          "km_improd": 6014.5,
+          "km_total": 6014.5
+        }
+      }
+    },
+    "viagens_excecao": {
+      "2026-07": {
+        "registros": 57,
+        "suspeitos": 0,
+        "somas": {
+          "km_prod": 0.0
+        }
+      },
+      "2026-08": {
+        "registros": 56,
+        "suspeitos": 0,
+        "somas": {
+          "km_prod": 0.0
+        }
+      },
+      "2026-09": {
+        "registros": 9,
+        "suspeitos": 0,
+        "somas": {
+          "km_prod": 0.0
+        }
+      }
+    },
+    "resumo_geral": {
+      "2026-07": {
+        "registros": 31,
+        "suspeitos": 0,
+        "somas": {
+          "nr_veiculos": 1363.0,
+          "nr_max_veic_fx": 1249.0,
+          "nr_viagens_progr": 36387.0,
+          "nr_viagens_realiz": 36330.0,
+          "dif_viagens": 57.0,
+          "km_prod": 248321.3,
+          "km_improd": 14425.5,
+          "km_total": 262746.8
+        }
+      },
+      "2026-08": {
+        "registros": 31,
+        "suspeitos": 0,
+        "somas": {
+          "nr_veiculos": 1404.0,
+          "nr_max_veic_fx": 1281.0,
+          "nr_viagens_progr": 35050.0,
+          "nr_viagens_realiz": 34994.0,
+          "dif_viagens": 56.0,
+          "km_prod": 261886.8,
+          "km_improd": 13807.7,
+          "km_total": 275694.5
+        }
+      },
+      "2026-09": {
+        "registros": 14,
+        "suspeitos": 0,
+        "somas": {
+          "nr_veiculos": 619.0,
+          "nr_max_veic_fx": 563.0,
+          "nr_viagens_progr": 15498.0,
+          "nr_viagens_realiz": 15489.0,
+          "dif_viagens": 9.0,
+          "km_prod": 115795.6,
+          "km_improd": 6014.5,
+          "km_total": 121810.1
+        }
+      }
+    },
+    "resumo_linha": {
+      "2026-07": {
+        "registros": 293,
+        "suspeitos": 0,
+        "somas": {
+          "km_total": 248321.3,
+          "nr_viagens": 36330.0
+        }
+      },
+      "2026-08": {
+        "registros": 279,
+        "suspeitos": 0,
+        "somas": {
+          "km_total": 261886.8,
+          "nr_viagens": 34994.0
+        }
+      },
+      "2026-09": {
+        "registros": 126,
+        "suspeitos": 0,
+        "somas": {
+          "km_total": 115795.6,
+          "nr_viagens": 15489.0
+        }
+      }
+    },
+    "partidas_faixa_horaria": {
+      "2026-07": {
+        "registros": 5882,
+        "suspeitos": 0,
+        "somas": {
+          "fx_hor": 78002.0,
+          "nr_veiculos": 21465.0,
+          "nr_viagens": 36330.0
+        }
+      },
+      "2026-08": {
+        "registros": 5598,
+        "suspeitos": 0,
+        "somas": {
+          "fx_hor": 74179.0,
+          "nr_veiculos": 21981.0,
+          "nr_viagens": 34994.0
+        }
+      },
+      "2026-09": {
+        "registros": 2526,
+        "suspeitos": 0,
+        "somas": {
+          "fx_hor": 33473.0,
+          "nr_veiculos": 9672.0,
+          "nr_viagens": 15489.0
+        }
+      }
+    },
+    "resumo_faixa_horaria": {
+      "2026-07": {
+        "registros": 651,
+        "suspeitos": 0,
+        "somas": {
+          "fx_hor": 8370.0,
+          "nr_veiculos": 21454.0,
+          "nr_viagens": 36330.0
+        }
+      },
+      "2026-08": {
+        "registros": 651,
+        "suspeitos": 0,
+        "somas": {
+          "fx_hor": 8370.0,
+          "nr_veiculos": 21974.0,
+          "nr_viagens": 34994.0
+        }
+      },
+      "2026-09": {
+        "registros": 294,
+        "suspeitos": 0,
+        "somas": {
+          "fx_hor": 3780.0,
+          "nr_veiculos": 9669.0,
+          "nr_viagens": 15489.0
+        }
+      }
+    },
+    "fcv": {
+      "2026-07": {
+        "registros": 31,
+        "suspeitos": 0,
+        "somas": {
+          "manha_p": 14127.0,
+          "manha_r": 14108.0,
+          "tarde_p": 12477.0,
+          "tarde_r": 12449.0,
+          "noite_p": 9783.0,
+          "noite_r": 9773.0,
+          "programadas": 36387.0,
+          "realizadas": 36330.0
+        }
+      },
+      "2026-08": {
+        "registros": 31,
+        "suspeitos": 0,
+        "somas": {
+          "manha_p": 13604.0,
+          "manha_r": 13580.0,
+          "tarde_p": 11933.0,
+          "tarde_r": 11906.0,
+          "noite_p": 9513.0,
+          "noite_r": 9508.0,
+          "programadas": 35050.0,
+          "realizadas": 34994.0
+        }
+      },
+      "2026-09": {
+        "registros": 14,
+        "suspeitos": 0,
+        "somas": {
+          "manha_p": 6012.0,
+          "manha_r": 6011.0,
+          "tarde_p": 5280.0,
+          "tarde_r": 5277.0,
+          "noite_p": 4206.0,
+          "noite_r": 4201.0,
+          "programadas": 15498.0,
+          "realizadas": 15489.0
+        }
+      }
+    },
+    "passageiros": {
+      "2026-07": {
+        "registros": 17,
+        "suspeitos": 0,
+        "somas": {
+          "catraca": 273564.0,
+          "antecipados": 11031.0,
+          "nao_pagantes": 205058.0,
+          "total": 489653.0
+        }
+      },
+      "2026-08": {
+        "registros": 31,
+        "suspeitos": 0,
+        "somas": {
+          "catraca": 228430.0,
+          "antecipados": 59948.0,
+          "nao_pagantes": 761870.0,
+          "total": 1050248.0
+        }
+      },
+      "2026-09": {
+        "registros": 14,
+        "suspeitos": 0,
+        "somas": {
+          "catraca": 82806.0,
+          "antecipados": 32721.0,
+          "nao_pagantes": 335674.0,
+          "total": 451201.0
+        }
+      }
+    },
+    "saldos": {
+      "2026-07": {
+        "registros": 14,
+        "suspeitos": 0,
+        "somas": {
+          "creditos_transferidos": 523855.63,
+          "saldo_final": 290584968.99
+        }
+      },
+      "2026-08": {
+        "registros": 24,
+        "suspeitos": 0,
+        "somas": {
+          "creditos_transferidos": 676230.71,
+          "saldo_final": 485193015.09
+        }
+      },
+      "2026-09": {
+        "registros": 14,
+        "suspeitos": 0,
+        "somas": {
+          "creditos_transferidos": 92948.34,
+          "saldo_final": 275856689.57
+        }
+      }
+    },
+    "vendas": {
+      "2026-07": {
+        "registros": 26,
+        "suspeitos": 0,
+        "somas": {
+          "total_vendas": 553425.63,
+          "total_utilizacao": 55155.0,
+          "credito_circulante": 498270.63
+        }
+      },
+      "2026-08": {
+        "registros": 31,
+        "suspeitos": 0,
+        "somas": {
+          "total_vendas": 668605.71,
+          "total_utilizacao": 299740.0,
+          "credito_circulante": 368865.71
+        }
+      },
+      "2026-09": {
+        "registros": 14,
+        "suspeitos": 0,
+        "somas": {
+          "total_vendas": 90558.34,
+          "total_utilizacao": 163605.0,
+          "credito_circulante": -73046.66
+        }
+      }
+    }
+  }
+}
