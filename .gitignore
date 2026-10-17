@@ -9,3 +9,7 @@ __pycache__/
 Thumbs.db
 back/modelos/
 *.egg-info/
+# relatórios gerados pelo pytest (evidência fica no artefato do CI)
+back/relatorios/
+back/relatorios_run.log
+.coverage
