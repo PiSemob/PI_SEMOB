@@ -5,8 +5,8 @@ import 'package:mobi_ai/features/assistente/pages/assistente_page.dart';
 
 void main() {
   Widget createAssistenteWidget() {
-    return ProviderScope(
-      child: MaterialApp(home: AssistentePage()),
+    return const ProviderScope(
+      child: MaterialApp(home: Scaffold(body: AssistentePage())),
     );
   }
 

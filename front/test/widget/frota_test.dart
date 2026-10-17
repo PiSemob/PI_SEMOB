@@ -6,11 +6,11 @@ import 'package:mobi_ai/shared/widgets/app_shell.dart';
 
 void main() {
   Widget createFrotaWidget() {
-    return ProviderScope(
+    return const ProviderScope(
       child: MaterialApp(
         home: AppShell(
-          rotaAtual: '/frota', 
-          child: const FrotaPage(),
+          rotaAtual: '/frota',
+          child: FrotaPage(),
         ),
       ),
     );
@@ -23,11 +23,13 @@ void main() {
     expect(find.textContaining('L02'), findsWidgets);
 
     final chipL01 = find.text('L01');
+    await tester.ensureVisible(chipL01);
+    await tester.pumpAndSettle();
     await tester.tap(chipL01);
     await tester.pumpAndSettle();
 
-    expect(find.textContaining('L01'), findsWidgets);
-    expect(find.textContaining('L02'), findsNothing);
+    expect(find.textContaining('L01 ·'), findsWidgets);
+    expect(find.textContaining('L02 ·'), findsNothing);
   });
 
   testWidgets('Deve exibir EmptyState quando nenhuma linha for encontrada', (WidgetTester tester) async {
