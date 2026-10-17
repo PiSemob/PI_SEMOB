@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:ferret_bi/shared/providers.dart';
+import 'package:mobi_ai/shared/providers.dart';
 
 void main() {
   group('SessaoProvider Tests (Caixa Branca)', () {
