@@ -1,0 +1,68 @@
+name: Testes do back
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  pytest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+
+    services:
+      mongo:
+        image: mongo:7
+        ports: ["27017:27017"]
+      postgres:
+        image: timescale/timescaledb:latest-pg16
+        env:
+          POSTGRES_USER: semob
+          POSTGRES_PASSWORD: semob-ci
+          POSTGRES_DB: semob
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U semob"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      POSTGRES_URL: postgresql+pg8000://semob:semob-ci@localhost:5432/semob
+      MONGO_URL: mongodb://localhost:27017
+      MONGO_DB: semob
+
+    defaults:
+      run:
+        working-directory: back
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: back/pyproject.toml
+
+      - name: Instalar dependências
+        run: pip install -e ".[dev]"
+
+      - name: Análise estática (ruff)
+        run: ruff check . --output-format=github
+        continue-on-error: true
+
+      - name: Rodar os testes
+        run: >-
+          pytest -rA --durations=10
+          --cov=app --cov=scripts --cov-report=term --cov-report=html:relatorios/cobertura
+          --html=relatorios/testes.html --self-contained-html
+          --junitxml=relatorios/junit.xml
+
+      - name: Publicar relatórios
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: relatorios-de-teste
+          path: back/relatorios/

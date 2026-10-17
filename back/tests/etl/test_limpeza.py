@@ -1,38 +1,13 @@
-from collections import defaultdict
 from datetime import date, datetime
-from pathlib import Path
 
 import pandas as pd
 import pytest
 from sqlalchemy import create_engine, func, select
 
 from app.db.tabelas import metadata
-from app.etl.carga_bruta import montar_documentos
-from app.etl.limpeza import (
-    data_de_geracao,
-    faixa_horaria,
-    gravar,
-    inteiro,
-    limpar_tudo,
-    numero,
-    tabela_bruta,
-)
-from app.etl.parsers.leitura import ler_arquivo
-from app.etl.parsers.tipos import TIPOS, identificar
+from app.etl.limpeza import data_de_geracao, faixa_horaria, gravar, inteiro, numero
 
-BRUTOS = Path(__file__).resolve().parents[3] / "dados" / "brutos"
-
-
-@pytest.fixture(scope="module")
-def limpas() -> dict[str, pd.DataFrame]:
-    """Lê os 44 arquivos e limpa tudo, uma vez só para todos os testes deste arquivo."""
-    documentos = defaultdict(list)
-    for caminho in sorted(BRUTOS.rglob("*.html")):
-        for relatorio in ler_arquivo(caminho):
-            tipo = identificar(relatorio.titulo)
-            documentos[tipo.chave].extend(montar_documentos(relatorio, tipo))
-    tipos = {tipo.chave: tipo for tipo in TIPOS}
-    return limpar_tudo(lambda chave: tabela_bruta(documentos[chave], tipos[chave]))
+# A fixture `limpas` (os 44 arquivos lidos e limpos) fica em tests/conftest.py.
 
 
 def por_mes(df: pd.DataFrame) -> pd.Series:

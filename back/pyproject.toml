@@ -23,7 +23,7 @@ dependencies = [
 
 
 [project.optional-dependencies]
-dev = ["pytest", "httpx", "ruff"]
+dev = ["pytest", "httpx", "ruff", "pytest-cov", "pytest-html", "pytest-bdd"]
 
 [tool.setuptools.packages.find]
 include = ["app*"]
@@ -31,3 +31,17 @@ include = ["app*"]
 [tool.pytest.ini_options]
 pythonpath = ["."]
 testpaths = ["tests"]
+bdd_features_base_dir = "tests/bdd/features"
+# Cada teste recebe a marca da pasta onde está (ver tests/conftest.py).
+markers = [
+    "unidade: funções isoladas, sem banco (tests/etl, tests/ml, tests/test_saude.py)",
+    "integracao: conversa com os containers do MongoDB e do PostgreSQL",
+    "sistema: roda os scripts do back de ponta a ponta",
+    "aceitacao: totais gravados nos bancos contra os totais dos HTMLs originais",
+    "regressao: compara a leitura dos 44 HTMLs com a linha de base registrada",
+    "bdd: cenários das histórias em tests/bdd/features",
+]
+
+[tool.coverage.run]
+# Mede também os scripts que os testes de sistema rodam com `python -m scripts...`.
+patch = ["subprocess"]
