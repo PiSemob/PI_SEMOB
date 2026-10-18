@@ -16,6 +16,8 @@ dependencies = [
     "sqlalchemy",
     "pg8000",
     "scikit-learn==1.8.0",
+    "prophet",
+    "holidays",
 ]
 
 
