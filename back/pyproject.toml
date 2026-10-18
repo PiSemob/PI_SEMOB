@@ -18,6 +18,7 @@ dependencies = [
     "scikit-learn==1.8.0",
     "prophet",
     "holidays",
+    "statsmodels==0.14.5",
 ]
 
 
