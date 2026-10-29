@@ -1,0 +1,21 @@
+Mapa de Sao Caetano do Sul (tela de login)
+==========================================
+
+Fonte: OpenStreetMap, (c) colaboradores do OpenStreetMap.
+Licenca: ODbL (https://www.openstreetmap.org/copyright). O credito aparece
+no rodape do painel do login, como a licenca exige.
+
+Dados baixados em 29/10/2026 e simplificados (Douglas-Peucker) para o app
+abrir rapido e sem internet:
+
+  sao_caetano_do_sul.geojson  contorno do municipio (relacao OSM 298170,
+                              admin_level 8), 190 pontos
+  bairros.geojson             divisas dos 15 bairros (relacoes administrativas)
+  vias_principais.geojson     Av. Goias, Av. Presidente Kennedy,
+                              Av. Guido Aliberti e Av. dos Estados
+  pontos.geojson              Centro (meio do bairro) e Estacao Sao Caetano
+                              (Prefeito Walter Braido)
+
+O Terminal Santa Paula nao aparece porque nao existe no OpenStreetMap com
+esse nome. A Av. dos Estados corre na divisa com Santo Andre e Sao Paulo,
+entao so o trecho dentro do municipio aparece no desenho.
