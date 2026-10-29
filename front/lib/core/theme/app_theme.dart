@@ -1,53 +1,67 @@
 import 'package:flutter/material.dart';
 
-/// Identidade visual Ferret: painel técnico claro, em tons de cinza, com
-/// tipografia monoespaçada e um único destaque laranja.
+/// Identidade visual Ferret: painel institucional em azul-claro. Superfícies
+/// planas separadas por filetes finos, um azul próprio e sóbrio para as ações
+/// e a família IBM Plex (Sans na interface, Mono nos números).
 class AppColors {
   const AppColors._();
 
-  /// Tinta: a cor dos textos principais, das linhas dos gráficos e dos botões.
-  static const Color ink = Color(0xFF1C1C1C);
+  /// Tinta: azul-ardósia escuro dos textos principais e dos tooltips.
+  static const Color ink = Color(0xFF14233A);
 
-  // Navegação lateral (clara).
-  static const Color sidebar = Color(0xFFFAFAFA);
-  static const Color sidebarHover = Color(0xFFF0F0F0);
-  static const Color sidebarActive = Color(0xFFEAEAEA);
-  static const Color sidebarText = Color(0xFF6E6E6E);
+  // Navegação lateral: o tom mais claro de azul, que identifica o sistema.
+  static const Color sidebar = Color(0xFFEDF3FA);
+  static const Color sidebarHover = Color(0xFFE2ECF7);
+  static const Color sidebarActive = Color(0xFFD6E4F3);
+  static const Color sidebarText = Color(0xFF41546E);
 
-  // Marca.
-  static const Color brandTop = Color(0xFFF4F4F4);
-  static const Color brandBottom = Color(0xFFE6E6E6);
+  // Marca: o fundo do login, um degradê de azul bem claro.
+  static const Color brandTop = Color(0xFFEEF4FA);
+  static const Color brandBottom = Color(0xFFDCE8F5);
+  static const Color fundoLogin = Color(0xFFE6EFF9);
 
-  /// Destaque. Usado com parcimônia: alertas, seleção e o ponto que importa.
-  static const Color accent = Color(0xFFF0532A);
-  static const Color accentSoft = Color(0xFFFBE2DA);
+  // Mapa do município no login: azuis claros, sem saturação.
+  static const Color mapaMunicipio = brandBottom;
+  static const Color mapaContorno = Color(0xFF7FAEDF);
+  static const Color mapaBairro = Color(0xFFC3D6EA);
+  static const Color mapaVia = surface;
+
+  /// Sombra leve e neutra, a única permitida no app.
+  static const Color sombra = Color(0x1414233A); // ink com alpha 0,08
+
+  /// Destaque: azul médio, usado em seleção, séries secundárias e estados
+  /// "ok" (em rota, conectado, processado).
+  static const Color accent = Color(0xFF3D7CC9);
+  static const Color accentSoft = Color(0xFFE3EDF8);
 
   // Ação.
-  static const Color primary = ink;
-  static const Color primaryHover = Color(0xFF000000);
-  static const Color secondary = Color(0xFF7A7A7A);
+  static const Color primary = Color(0xFF1F5FA8);
+  static const Color primaryHover = Color(0xFF184D8A);
+  static const Color primarySoft = Color(0xFFE8F0FA);
+  static const Color secondary = Color(0xFF6B7F99);
 
-  static const Color success = Color(0xFF3E7C59);
-  static const Color warning = Color(0xFFD98A1F);
-  static const Color danger = Color(0xFFD8371A);
-  static const Color teal = Color(0xFF5E7A7A);
-  static const Color purple = Color(0xFFA3A3A3);
+  static const Color success = Color(0xFF2E7D5B);
+  static const Color warning = Color(0xFFB7791F);
+  static const Color danger = Color(0xFFC0392B);
+  static const Color teal = Color(0xFF2F7F86);
+  static const Color purple = Color(0xFF5A6B9C);
 
-  static const Color background = Color(0xFFEDEDED);
-  static const Color surface = Color(0xFFFAFAFA);
-  static const Color surfaceMuted = Color(0xFFF1F1F1);
-  static const Color border = Color(0xFFD4D4D4);
+  static const Color background = Color(0xFFF5F8FC);
+  static const Color surface = Color(0xFFFFFFFF);
+  static const Color surfaceMuted = Color(0xFFF2F6FB);
+  static const Color border = Color(0xFFD9E2EC);
+  static const Color borderStrong = Color(0xFFBFCCDB);
 
   static const Color textPrimary = ink;
-  static const Color textSecondary = Color(0xFF5E5E5E);
-  static const Color textMuted = Color(0xFF9B9B9B);
+  static const Color textSecondary = Color(0xFF52647C);
+  static const Color textMuted = Color(0xFF8595AA);
 
   /// Sequência usada nos gráficos (demanda, receita, créditos, frota).
   static const List<Color> chart = <Color>[
     primary,
-    accent,
-    secondary,
-    Color(0xFFB8B8B8),
+    Color(0xFF7FAEDF),
+    Color(0xFF0E3A66),
+    Color(0xFFB4C8DD),
     teal,
     warning,
   ];
@@ -62,71 +76,71 @@ class AppSpacing {
   static const double lg = 24;
   static const double xl = 32;
 
-  // Cantos retos em todo o app. Os três nomes continuam existindo porque as
-  // telas os usam; o valor é que mudou.
-  static const double radiusSm = 2;
-  static const double radius = 2;
-  static const double radiusPill = 2;
+  // Cantos arredondados, mas sem virar "bolha": controles com 8 e painéis com 12.
+  static const double radiusSm = 8;
+  static const double radius = 12;
+  static const double radiusPill = 999;
 }
 
-/// Tipografia IBM Plex Mono aplicada globalmente pelo tema; aqui ficam apenas
-/// pesos, tamanhos e espaçamento entre letras.
+/// IBM Plex Sans é a fonte da interface (aplicada pelo tema). Os valores
+/// numéricos usam IBM Plex Mono, que alinha os dígitos como num relatório.
 class AppTextStyles {
   const AppTextStyles._();
 
+  static const String mono = 'IBM Plex Mono';
+
   static const TextStyle display = TextStyle(
-    fontSize: 30,
+    fontSize: 32,
     height: 1.2,
     fontWeight: FontWeight.w600,
-    letterSpacing: -0.5,
+    letterSpacing: -0.4,
     color: AppColors.textPrimary,
   );
 
   static const TextStyle title = TextStyle(
-    fontSize: 15,
+    fontSize: 17,
     fontWeight: FontWeight.w600,
-    letterSpacing: 0.6,
     color: AppColors.textPrimary,
   );
 
   static const TextStyle section = TextStyle(
-    fontSize: 12.5,
+    fontSize: 14.5,
     fontWeight: FontWeight.w600,
-    letterSpacing: 1.0,
     color: AppColors.textPrimary,
   );
 
   static const TextStyle metric = TextStyle(
-    fontSize: 30,
-    height: 1.1,
+    fontFamily: mono,
+    fontSize: 28,
+    height: 1.15,
     fontWeight: FontWeight.w500,
-    letterSpacing: -0.5,
+    letterSpacing: -0.6,
     color: AppColors.textPrimary,
   );
 
   static const TextStyle body = TextStyle(
-    fontSize: 13,
+    fontSize: 13.5,
+    height: 1.45,
     color: AppColors.textPrimary,
   );
 
   static const TextStyle label = TextStyle(
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: FontWeight.w500,
-    letterSpacing: 0.3,
     color: AppColors.textPrimary,
   );
 
   static const TextStyle caption = TextStyle(
-    fontSize: 11,
-    letterSpacing: 0.2,
+    fontSize: 12,
+    height: 1.4,
     color: AppColors.textSecondary,
   );
 
-  /// Rótulo maiúsculo dos cards de indicador e dos grupos de navegação.
+  /// Rótulo pequeno dos indicadores, das tabelas e dos grupos de navegação.
   static const TextStyle overline = TextStyle(
-    fontSize: 10.5,
-    fontWeight: FontWeight.w500,
-    letterSpacing: 1.2,
+    fontSize: 11,
+    fontWeight: FontWeight.w600,
+    letterSpacing: 0.5,
     color: AppColors.textSecondary,
   );
 }
@@ -134,17 +148,37 @@ class AppTextStyles {
 class AppTheme {
   const AppTheme._();
 
-  static const RoundedRectangleBorder _reto = RoundedRectangleBorder(
-    borderRadius: BorderRadius.all(Radius.circular(AppSpacing.radius)),
+  static const String _fonte = 'IBM Plex Sans';
+
+  static const RoundedRectangleBorder _controle = RoundedRectangleBorder(
+    borderRadius: BorderRadius.all(Radius.circular(AppSpacing.radiusSm)),
   );
+
+  static const RoundedRectangleBorder _painel = RoundedRectangleBorder(
+    borderRadius: BorderRadius.all(Radius.circular(AppSpacing.radius)),
+    side: BorderSide(color: AppColors.border),
+  );
+
+  static const TextStyle _textoBotao = TextStyle(
+    fontFamily: _fonte,
+    fontSize: 13.5,
+    fontWeight: FontWeight.w600,
+  );
+
+  static OutlineInputBorder _borda(Color cor, [double largura = 1]) =>
+      OutlineInputBorder(
+        borderRadius:
+            const BorderRadius.all(Radius.circular(AppSpacing.radiusSm)),
+        borderSide: BorderSide(color: cor, width: largura),
+      );
 
   static ThemeData get light {
     final ColorScheme scheme = ColorScheme.fromSeed(
-      seedColor: AppColors.accent,
+      seedColor: AppColors.primary,
     ).copyWith(
       primary: AppColors.primary,
       onPrimary: Colors.white,
-      primaryContainer: AppColors.surfaceMuted,
+      primaryContainer: AppColors.primarySoft,
       onPrimaryContainer: AppColors.ink,
       secondary: AppColors.accent,
       onSecondary: Colors.white,
@@ -168,168 +202,199 @@ class AppTheme {
     return ThemeData(
       useMaterial3: true,
       colorScheme: scheme,
-      fontFamily: 'IBM Plex Mono',
+      fontFamily: _fonte,
       scaffoldBackgroundColor: AppColors.background,
       splashFactory: NoSplash.splashFactory,
+      hoverColor: AppColors.primary.withValues(alpha: 0.04),
+      focusColor: AppColors.primary.withValues(alpha: 0.10),
+      highlightColor: AppColors.primary.withValues(alpha: 0.06),
       appBarTheme: const AppBarTheme(
         backgroundColor: AppColors.surface,
         foregroundColor: AppColors.textPrimary,
         surfaceTintColor: Colors.transparent,
         elevation: 0,
+        scrolledUnderElevation: 0,
         centerTitle: false,
         shape: Border(bottom: BorderSide(color: AppColors.border)),
       ),
-      inputDecorationTheme: const InputDecorationTheme(
+      inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: AppColors.surface,
-        hintStyle: TextStyle(fontSize: 13, color: AppColors.textMuted),
-        contentPadding: EdgeInsets.symmetric(
-          horizontal: AppSpacing.md,
-          vertical: 14,
+        hoverColor: AppColors.surfaceMuted,
+        hintStyle: const TextStyle(fontSize: 13.5, color: AppColors.textMuted),
+        prefixIconColor: WidgetStateColor.resolveWith(
+          (Set<WidgetState> estados) => estados.contains(WidgetState.focused)
+              ? AppColors.primary
+              : AppColors.textMuted,
         ),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.all(Radius.circular(AppSpacing.radius)),
-          borderSide: BorderSide(color: AppColors.border),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 12,
+          vertical: 13,
         ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.all(Radius.circular(AppSpacing.radius)),
-          borderSide: BorderSide(color: AppColors.border),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.all(Radius.circular(AppSpacing.radius)),
-          borderSide: BorderSide(color: AppColors.ink, width: 1.2),
-        ),
+        border: _borda(AppColors.borderStrong),
+        enabledBorder: _borda(AppColors.borderStrong),
+        // Foco nítido, de 2 px: indispensável para quem usa o teclado.
+        focusedBorder: _borda(AppColors.primary, 2),
+        errorBorder: _borda(AppColors.danger),
+        focusedErrorBorder: _borda(AppColors.danger, 2),
+        errorStyle: const TextStyle(fontSize: 12, color: AppColors.danger),
       ),
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
-          minimumSize: const Size.fromHeight(46),
-          backgroundColor: AppColors.ink,
+          minimumSize: const Size.fromHeight(44),
           foregroundColor: Colors.white,
-          shape: _reto,
-          textStyle: const TextStyle(
-            fontFamily: 'IBM Plex Mono',
-            fontSize: 12,
-            fontWeight: FontWeight.w600,
-            letterSpacing: 1.0,
+          disabledForegroundColor: AppColors.textMuted,
+          elevation: 0,
+          shape: _controle,
+          textStyle: _textoBotao,
+        ).copyWith(
+          backgroundColor: WidgetStateProperty.resolveWith<Color?>(
+            (Set<WidgetState> estados) {
+              if (estados.contains(WidgetState.disabled)) {
+                return AppColors.sidebarActive;
+              }
+              if (estados.contains(WidgetState.hovered) ||
+                  estados.contains(WidgetState.pressed)) {
+                return AppColors.primaryHover;
+              }
+              return AppColors.primary;
+            },
           ),
         ),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
-          minimumSize: const Size.fromHeight(46),
-          side: const BorderSide(color: AppColors.border),
+          minimumSize: const Size.fromHeight(44),
           foregroundColor: AppColors.textPrimary,
-          shape: _reto,
-          textStyle: const TextStyle(
-            fontFamily: 'IBM Plex Mono',
-            fontSize: 12,
-            fontWeight: FontWeight.w600,
-            letterSpacing: 1.0,
-          ),
+          backgroundColor: AppColors.surface,
+          side: const BorderSide(color: AppColors.borderStrong),
+          shape: _controle,
+          textStyle: _textoBotao,
         ),
       ),
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
-          foregroundColor: AppColors.textPrimary,
-          shape: _reto,
-          textStyle: const TextStyle(
-            fontFamily: 'IBM Plex Mono',
-            fontSize: 12,
-            fontWeight: FontWeight.w600,
-            letterSpacing: 0.6,
-          ),
+          foregroundColor: AppColors.primary,
+          shape: _controle,
+          textStyle: _textoBotao,
         ),
       ),
       iconButtonTheme: IconButtonThemeData(
-        style: IconButton.styleFrom(shape: _reto),
+        style: IconButton.styleFrom(
+          shape: _controle,
+          hoverColor: AppColors.surfaceMuted,
+        ),
       ),
       checkboxTheme: CheckboxThemeData(
-        shape: _reto,
-        side: const BorderSide(color: AppColors.secondary, width: 1.2),
+        shape: _controle,
+        side: const BorderSide(color: AppColors.secondary, width: 1.4),
         fillColor: WidgetStateProperty.resolveWith<Color?>(
           (Set<WidgetState> estados) =>
-              estados.contains(WidgetState.selected) ? AppColors.accent : null,
+              estados.contains(WidgetState.selected) ? AppColors.primary : null,
         ),
         checkColor: const WidgetStatePropertyAll<Color>(Colors.white),
       ),
       switchTheme: SwitchThemeData(
         trackColor: WidgetStateProperty.resolveWith<Color?>(
           (Set<WidgetState> estados) => estados.contains(WidgetState.selected)
-              ? AppColors.accent
+              ? AppColors.primary
               : AppColors.sidebarActive,
         ),
         thumbColor: const WidgetStatePropertyAll<Color>(Colors.white),
         trackOutlineColor:
-            const WidgetStatePropertyAll<Color>(AppColors.border),
+            const WidgetStatePropertyAll<Color>(Colors.transparent),
       ),
       progressIndicatorTheme: const ProgressIndicatorThemeData(
-        color: AppColors.accent,
+        color: AppColors.primary,
         linearTrackColor: AppColors.sidebarActive,
       ),
       chipTheme: const ChipThemeData(
         backgroundColor: AppColors.surface,
-        selectedColor: AppColors.ink,
+        selectedColor: AppColors.primarySoft,
         side: BorderSide(color: AppColors.border),
         labelStyle: TextStyle(
-          fontFamily: 'IBM Plex Mono',
-          fontSize: 12,
+          fontFamily: _fonte,
+          fontSize: 12.5,
           fontWeight: FontWeight.w500,
-          letterSpacing: 0.3,
           color: AppColors.textPrimary,
         ),
         secondaryLabelStyle: TextStyle(
-          fontFamily: 'IBM Plex Mono',
-          fontSize: 12,
-          fontWeight: FontWeight.w500,
-          letterSpacing: 0.3,
-          color: Colors.white,
+          fontFamily: _fonte,
+          fontSize: 12.5,
+          fontWeight: FontWeight.w600,
+          color: AppColors.primary,
         ),
-        shape: _reto,
+        shape: _controle,
         showCheckmark: false,
       ),
       cardTheme: const CardThemeData(
         color: AppColors.surface,
         elevation: 0,
         margin: EdgeInsets.zero,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.all(Radius.circular(AppSpacing.radius)),
-          side: BorderSide(color: AppColors.border),
-        ),
+        shape: _painel,
       ),
       dialogTheme: const DialogThemeData(
         backgroundColor: AppColors.surface,
-        shape: _reto,
+        surfaceTintColor: Colors.transparent,
+        shape: _painel,
+      ),
+      datePickerTheme: const DatePickerThemeData(
+        backgroundColor: AppColors.surface,
+        surfaceTintColor: Colors.transparent,
+        headerBackgroundColor: AppColors.primary,
+        headerForegroundColor: Colors.white,
+        rangeSelectionBackgroundColor: AppColors.primarySoft,
+        shape: _painel,
       ),
       popupMenuTheme: const PopupMenuThemeData(
         color: AppColors.surface,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.all(Radius.circular(AppSpacing.radius)),
-          side: BorderSide(color: AppColors.border),
-        ),
+        surfaceTintColor: Colors.transparent,
+        elevation: 3,
+        shadowColor: Color(0x2214233A),
+        shape: _painel,
       ),
       snackBarTheme: const SnackBarThemeData(
         backgroundColor: AppColors.ink,
         contentTextStyle: TextStyle(
-          fontFamily: 'IBM Plex Mono',
-          fontSize: 12,
+          fontFamily: _fonte,
+          fontSize: 13,
           color: Colors.white,
         ),
-        shape: _reto,
+        actionTextColor: Color(0xFFA9C9EE),
+        shape: _controle,
         behavior: SnackBarBehavior.floating,
       ),
       tooltipTheme: const TooltipThemeData(
-        decoration: BoxDecoration(color: AppColors.ink),
+        waitDuration: Duration(milliseconds: 400),
+        decoration: BoxDecoration(
+          color: AppColors.ink,
+          borderRadius: BorderRadius.all(Radius.circular(AppSpacing.radiusSm)),
+        ),
         textStyle: TextStyle(
-          fontFamily: 'IBM Plex Mono',
-          fontSize: 11,
+          fontFamily: _fonte,
+          fontSize: 12,
           color: Colors.white,
         ),
       ),
-      listTileTheme: const ListTileThemeData(shape: _reto),
-      dataTableTheme: const DataTableThemeData(
+      listTileTheme: const ListTileThemeData(shape: _controle),
+      dataTableTheme: DataTableThemeData(
         headingTextStyle: AppTextStyles.overline,
         dataTextStyle: AppTextStyles.body,
+        headingRowColor:
+            const WidgetStatePropertyAll<Color>(AppColors.surfaceMuted),
+        dataRowColor: WidgetStateProperty.resolveWith<Color?>(
+          (Set<WidgetState> estados) => estados.contains(WidgetState.hovered)
+              ? AppColors.surfaceMuted
+              : null,
+        ),
         dividerThickness: 1,
+      ),
+      scrollbarTheme: ScrollbarThemeData(
+        radius: const Radius.circular(AppSpacing.radiusSm),
+        thickness: const WidgetStatePropertyAll<double>(6),
+        thumbColor: WidgetStatePropertyAll<Color>(
+          AppColors.secondary.withValues(alpha: 0.35),
+        ),
       ),
       dividerTheme: const DividerThemeData(color: AppColors.border, space: 1),
     );

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/theme/app_theme.dart';
+import '../painel.dart';
 import '../providers.dart';
 
 class FiltroPeriodoBar extends ConsumerWidget {
@@ -11,11 +12,17 @@ class FiltroPeriodoBar extends ConsumerWidget {
 
   Future<void> _escolherIntervalo(BuildContext context, WidgetRef ref) async {
     final FiltroPeriodo atual = ref.read(filtroPeriodoProvider);
+    // Só deixa escolher dias que existem nos relatórios.
+    final Painel? painel = ref.read(painelProvider).valueOrNull;
+    final DateTime primeiro = painel?.inicio ?? DateTime(2023);
+    final DateTime ultimo = painel?.fim ?? DateTime.now();
+    DateTime dentro(DateTime d) =>
+        d.isBefore(primeiro) ? primeiro : (d.isAfter(ultimo) ? ultimo : d);
     final DateTimeRange? intervalo = await showDateRangePicker(
       context: context,
-      firstDate: DateTime(2023),
-      lastDate: DateTime.now(),
-      initialDateRange: DateTimeRange(start: atual.inicio, end: atual.fim),
+      firstDate: primeiro,
+      lastDate: ultimo,
+      initialDateRange: DateTimeRange(start: dentro(atual.inicio), end: dentro(atual.fim)),
       helpText: 'Selecione o período',
       saveText: 'Aplicar',
     );
@@ -38,38 +45,82 @@ class FiltroPeriodoBar extends ConsumerWidget {
         border: Border(bottom: BorderSide(color: AppColors.border)),
       ),
       child: Wrap(
-        spacing: AppSpacing.sm,
+        spacing: AppSpacing.md,
         runSpacing: AppSpacing.sm,
         crossAxisAlignment: WrapCrossAlignment.center,
         children: <Widget>[
-          const Text('Período:', style: AppTextStyles.caption),
-          for (final PeriodoTipo tipo in PeriodoTipo.values)
-            _Pilula(
-              texto: tipo == PeriodoTipo.personalizado &&
-                      filtro.tipo == PeriodoTipo.personalizado
-                  ? filtro.descricao
-                  : tipo.label,
-              ativa: filtro.tipo == tipo,
-              onTap: tipo == PeriodoTipo.personalizado
-                  ? () => _escolherIntervalo(context, ref)
-                  : () =>
-                      ref.read(filtroPeriodoProvider.notifier).selecionar(tipo),
+          const Text('Período', style: AppTextStyles.label),
+          // Opções lado a lado num único bloco, como um seletor de sistema:
+          // fica claro que só uma vale por vez.
+          // No celular as opções não cabem lado a lado: rolam na horizontal.
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                color: AppColors.surface,
+                borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+                border: Border.all(color: AppColors.borderStrong),
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(AppSpacing.radiusSm - 1),
+                child: IntrinsicHeight(
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: <Widget>[
+                      for (final PeriodoTipo tipo
+                          in PeriodoTipo.values) ...<Widget>[
+                        if (tipo != PeriodoTipo.values.first)
+                          const VerticalDivider(
+                            width: 1,
+                            color: AppColors.borderStrong,
+                          ),
+                        _Pilula(
+                          texto: tipo == PeriodoTipo.personalizado &&
+                                  filtro.tipo == PeriodoTipo.personalizado
+                              ? filtro.descricao
+                              : tipo.label,
+                          icone: tipo == PeriodoTipo.personalizado
+                              ? Icons.calendar_today_outlined
+                              : null,
+                          ativa: filtro.tipo == tipo,
+                          onTap: tipo == PeriodoTipo.personalizado
+                              ? () => _escolherIntervalo(context, ref)
+                              : () => ref
+                                  .read(filtroPeriodoProvider.notifier)
+                                  .selecionar(tipo),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ),
             ),
-          if (mostrarComparacao) ...<Widget>[
-            Container(
-              width: 1,
-              height: 22,
-              margin: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
-              color: AppColors.border,
-            ),
-            _Pilula(
-              texto: 'Comparar períodos',
-              icone: Icons.trending_up,
-              ativa: filtro.comparar,
+          ),
+          if (mostrarComparacao)
+            InkWell(
+              borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
               onTap: () =>
                   ref.read(filtroPeriodoProvider.notifier).alternarComparacao(),
+              child: Padding(
+                padding: const EdgeInsets.only(right: AppSpacing.sm),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    Checkbox(
+                      value: filtro.comparar,
+                      visualDensity: VisualDensity.compact,
+                      onChanged: (_) => ref
+                          .read(filtroPeriodoProvider.notifier)
+                          .alternarComparacao(),
+                    ),
+                    const Text(
+                      'Comparar com período anterior',
+                      style: AppTextStyles.label,
+                    ),
+                  ],
+                ),
+              ),
             ),
-          ],
         ],
       ),
     );
@@ -91,36 +142,25 @@ class _Pilula extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final Color cor = ativa ? AppColors.primary : AppColors.textSecondary;
     return Material(
-      color: ativa ? AppColors.primary : AppColors.surface,
-      borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+      color: ativa ? AppColors.primarySoft : Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-        child: Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.md,
-            vertical: AppSpacing.sm,
-          ),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-            border: Border.all(
-              color: ativa ? AppColors.primary : AppColors.border,
-            ),
-          ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
               if (icone != null) ...<Widget>[
-                Icon(icone,
-                    size: 15,
-                    color: ativa ? Colors.white : AppColors.textSecondary),
-                const SizedBox(width: AppSpacing.xs),
+                Icon(icone, size: 14, color: cor),
+                const SizedBox(width: 6),
               ],
               Text(
                 texto,
                 style: AppTextStyles.label.copyWith(
-                  color: ativa ? Colors.white : AppColors.textSecondary,
+                  color: ativa ? AppColors.primary : AppColors.textSecondary,
+                  fontWeight: ativa ? FontWeight.w600 : FontWeight.w500,
                 ),
               ),
             ],
