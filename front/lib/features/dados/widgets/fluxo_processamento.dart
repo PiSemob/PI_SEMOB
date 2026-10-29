@@ -6,13 +6,13 @@ import '../../../shared/widgets/app_widgets.dart';
 class FluxoProcessamento extends StatelessWidget {
   const FluxoProcessamento({super.key});
 
-  static const List<(String, String)> _etapas =
-      <(String, String)>[
-    ('Receber E-mails', 'IMAP/TLS automático'),
-    ('Baixar PDFs', 'Extração de anexos'),
-    ('Ler & Extrair', 'OCR + Parsing IA'),
-    ('Validar Dados', 'ML + Regras SEMOB'),
-    ('Atualizar Dashboard', 'Push em tempo real'),
+  static const List<(String, String)> _etapas = <(String, String)>[
+    ('Relatórios HTML', 'Smart Report, em dados/brutos'),
+    ('Leitura', 'Identifica o tipo de cada relatório'),
+    ('Camada bruta', 'MongoDB, como veio'),
+    ('Limpeza', 'Converte e sinaliza suspeitos'),
+    ('Camada limpa', 'PostgreSQL, com a origem'),
+    ('Painel', 'Indicadores nas telas'),
   ];
 
   @override
@@ -25,8 +25,9 @@ class FluxoProcessamento extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           const AppSectionTitle(
-            'Fluxo de Processamento Automático',
-            subtitulo: 'Pipeline previsto para a integração com o backend',
+            'Do dado bruto ao indicador',
+            subtitulo:
+                'O mesmo ETL do back gera os dados que estas telas mostram',
           ),
           if (vertical)
             Column(
@@ -72,7 +73,7 @@ class _Etapa extends StatelessWidget {
   final (String, String) etapa;
   final int numero;
 
-    @override
+  @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
@@ -104,4 +105,3 @@ class _Etapa extends StatelessWidget {
     );
   }
 }
-
