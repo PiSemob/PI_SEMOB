@@ -14,6 +14,7 @@ class GraficoCard extends StatelessWidget {
     this.subtitulo,
     this.altura = 260,
     this.acao,
+    this.filtros,
   });
 
   final String titulo;
@@ -22,6 +23,8 @@ class GraficoCard extends StatelessWidget {
   final double altura;
   final Widget? acao;
 
+  final Widget? filtros;
+
   @override
   Widget build(BuildContext context) {
     return AppCard(
@@ -29,6 +32,10 @@ class GraficoCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           AppSectionTitle(titulo, subtitulo: subtitulo, acao: acao),
+          if (filtros != null) ...<Widget>[
+            filtros!,
+            const SizedBox(height: AppSpacing.md),
+          ],
           SizedBox(height: altura, child: child),
         ],
       ),
@@ -49,15 +56,23 @@ Widget _rotuloEixoX(List<PontoSerie> serie, double value, TitleMeta meta) {
   );
 }
 
-Widget _rotuloEixoY(double value, TitleMeta meta) {
+Widget _rotuloEixoY(
+  double value,
+  TitleMeta meta, [
+  String Function(num) formatar = fmtCompacto,
+]) {
   if (value == meta.max) return const SizedBox.shrink();
   return SideTitleWidget(
     axisSide: meta.axisSide,
-    child: Text(fmtCompacto(value), style: AppTextStyles.caption),
+    child: Text(formatar(value), style: AppTextStyles.caption),
   );
 }
 
-FlTitlesData _titulos(List<PontoSerie> serie) => FlTitlesData(
+FlTitlesData _titulos(
+  List<PontoSerie> serie, {
+  String Function(num) formatarEixo = fmtCompacto,
+}) =>
+    FlTitlesData(
       topTitles: const AxisTitles(),
       rightTitles: const AxisTitles(),
       bottomTitles: AxisTitles(
@@ -68,14 +83,26 @@ FlTitlesData _titulos(List<PontoSerie> serie) => FlTitlesData(
           getTitlesWidget: (double v, TitleMeta m) => _rotuloEixoX(serie, v, m),
         ),
       ),
-      leftTitles: const AxisTitles(
+      leftTitles: AxisTitles(
         sideTitles: SideTitles(
           showTitles: true,
-          reservedSize: 44,
-          getTitlesWidget: _rotuloEixoY,
+          reservedSize: 52,
+          getTitlesWidget: (double v, TitleMeta m) => _rotuloEixoY(v, m, formatarEixo),
         ),
       ),
     );
+
+double _passoRedondo(double bruto) {
+  if (bruto <= 0) return 1;
+  double potencia = 1;
+  while (potencia * 10 <= bruto) {
+    potencia *= 10;
+  }
+  for (final int m in <int>[1, 2, 5, 10]) {
+    if (potencia * m >= bruto) return potencia * m;
+  }
+  return potencia * 10;
+}
 
 FlGridData get _grade => FlGridData(
       show: true,
@@ -92,6 +119,10 @@ class GraficoLinha extends StatelessWidget {
     this.serieSecundaria,
     this.cor = AppColors.primary,
     this.corSecundaria = AppColors.accent,
+    this.curva = false,
+    this.iniciarEmZero = true,
+    this.formatarEixo = fmtCompacto,
+    this.formatarValor = fmtInteiro,
   });
 
   final List<PontoSerie> serie;
@@ -101,6 +132,10 @@ class GraficoLinha extends StatelessWidget {
   final List<PontoSerie>? serieSecundaria;
   final Color cor;
   final Color corSecundaria;
+  final bool curva;
+  final bool iniciarEmZero;
+  final String Function(num) formatarEixo;
+  final String Function(num) formatarValor;
 
   LineChartBarData _barra(List<PontoSerie> dados, Color cor, bool tracejada) {
     return LineChartBarData(
@@ -108,30 +143,81 @@ class GraficoLinha extends StatelessWidget {
         for (int i = 0; i < dados.length; i++)
           FlSpot(i.toDouble(), dados[i].valor),
       ],
-      isCurved: false,
+      isCurved: curva,
+      curveSmoothness: 0.25,
+      preventCurveOverShooting: true,
       color: cor,
-      barWidth: 1.6,
+      barWidth: curva ? 2.2 : 1.6,
       dashArray: tracejada ? <int>[6, 4] : null,
-      dotData: const FlDotData(show: false),
+      dotData: FlDotData(
+        show: curva && !tracejada && dados.length <= 12,
+        getDotPainter: (FlSpot _, double __, LineChartBarData ___, int ____) =>
+            FlDotCirclePainter(
+          radius: 3,
+          color: AppColors.surface,
+          strokeColor: cor,
+          strokeWidth: 2,
+        ),
+      ),
       belowBarData: BarAreaData(
         show: !tracejada,
-        color: cor.withValues(alpha: 0.06),
+        color: curva ? null : cor.withValues(alpha: 0.06),
+        gradient: curva
+            ? LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: <Color>[cor.withValues(alpha: 0.18), cor.withValues(alpha: 0)],
+              )
+            : null,
       ),
     );
   }
+
+  LineTouchData get _toque => LineTouchData(
+        handleBuiltInTouches: true,
+        touchTooltipData: LineTouchTooltipData(
+          getTooltipColor: (LineBarSpot _) => AppColors.ink,
+          tooltipRoundedRadius: AppSpacing.radius,
+          fitInsideHorizontally: true,
+          fitInsideVertically: true,
+          getTooltipItems: (List<LineBarSpot> pontos) => <LineTooltipItem>[
+            for (final LineBarSpot p in pontos)
+              LineTooltipItem(
+                p == pontos.first && p.x.round() < serie.length
+                    ? '${serie[p.x.round()].rotulo}\n${formatarValor(p.y)}'
+                    : formatarValor(p.y),
+                AppTextStyles.caption.copyWith(color: Colors.white),
+              ),
+          ],
+        ),
+      );
 
   @override
   Widget build(BuildContext context) {
     if (serie.isEmpty) {
       return const EmptyState(mensagem: 'Sem dados para o período selecionado.');
     }
+    double? minY = 0;
+    double? maxY;
+    if (!iniciarEmZero) {
+      final Iterable<double> valores = <PontoSerie>[...serie, ...?serieSecundaria, ...?comparacao]
+          .map((PontoSerie p) => p.valor);
+      final double menor = valores.reduce((double a, double b) => a < b ? a : b);
+      final double maior = valores.reduce((double a, double b) => a > b ? a : b);
+      final double folga = (maior - menor) == 0 ? maior * 0.1 : (maior - menor);
+      final double passo = _passoRedondo(folga / 4);
+      minY = ((menor - folga * 0.3) / passo).floorToDouble() * passo;
+      if (minY < 0) minY = 0;
+      maxY = ((maior + folga * 0.15) / passo).ceilToDouble() * passo;
+    }
     return LineChart(
       LineChartData(
-        minY: 0,
+        minY: minY,
+        maxY: maxY,
         gridData: _grade,
         borderData: FlBorderData(show: false),
-        titlesData: _titulos(serie),
-        lineTouchData: const LineTouchData(handleBuiltInTouches: true),
+        titlesData: _titulos(serie, formatarEixo: formatarEixo),
+        lineTouchData: _toque,
         lineBarsData: <LineChartBarData>[
           _barra(serie, cor, false),
           if (serieSecundaria != null && serieSecundaria!.isNotEmpty)
@@ -212,27 +298,33 @@ class GraficoPizza extends StatelessWidget {
     return Row(
       children: <Widget>[
         Expanded(
-          child: PieChart(
-            PieChartData(
-              sectionsSpace: 2,
-              centerSpaceRadius: 42,
-              sections: <PieChartSectionData>[
-                for (int i = 0; i < serie.length; i++)
-                  PieChartSectionData(
-                    value: serie[i].valor,
-                    color: AppColors.chart[i % AppColors.chart.length],
-                    radius: 52,
-                    title: total == 0
-                        ? ''
-                        : '${(serie[i].valor / total * 100).toStringAsFixed(0)}%',
-                    titleStyle: const TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
-                    ),
-                  ),
-              ],
-            ),
+          child: LayoutBuilder(
+            builder: (BuildContext context, BoxConstraints c) {
+              final double raio = ((c.maxWidth < c.maxHeight ? c.maxWidth : c.maxHeight) / 2 - 4)
+                  .clamp(40, 94);
+              return PieChart(
+                PieChartData(
+                  sectionsSpace: 2,
+                  centerSpaceRadius: raio * 0.45,
+                  sections: <PieChartSectionData>[
+                    for (int i = 0; i < serie.length; i++)
+                      PieChartSectionData(
+                        value: serie[i].valor,
+                        color: AppColors.chart[i % AppColors.chart.length],
+                        radius: raio * 0.55,
+                        title: total == 0
+                            ? ''
+                            : '${(serie[i].valor / total * 100).toStringAsFixed(0)}%',
+                        titleStyle: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                      ),
+                  ],
+                ),
+              );
+            },
           ),
         ),
         const SizedBox(width: AppSpacing.md),

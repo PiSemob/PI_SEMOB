@@ -378,6 +378,47 @@ class EmptyState extends StatelessWidget {
   }
 }
 
+class TagFiltro extends StatelessWidget {
+  const TagFiltro({
+    super.key,
+    required this.texto,
+    required this.ativa,
+    required this.onTap,
+  });
+
+  final String texto;
+  final bool ativa;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(right: AppSpacing.xs),
+      child: Material(
+        color: ativa ? AppColors.primary : AppColors.surfaceMuted,
+        borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.sm + 2,
+              vertical: 6,
+            ),
+            child: Text(
+              texto,
+              style: AppTextStyles.caption.copyWith(
+                fontWeight: FontWeight.w500,
+                color: ativa ? Colors.white : AppColors.textSecondary,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class GradeCards extends StatelessWidget {
   const GradeCards({super.key, required this.itens, this.colunasDesktop = 4});
 
