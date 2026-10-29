@@ -12,7 +12,6 @@ class FiltroPeriodoBar extends ConsumerWidget {
 
   Future<void> _escolherIntervalo(BuildContext context, WidgetRef ref) async {
     final FiltroPeriodo atual = ref.read(filtroPeriodoProvider);
-    // Só deixa escolher dias que existem nos relatórios.
     final Painel? painel = ref.read(painelProvider).valueOrNull;
     final DateTime primeiro = painel?.inicio ?? DateTime(2023);
     final DateTime ultimo = painel?.fim ?? DateTime.now();
@@ -22,7 +21,8 @@ class FiltroPeriodoBar extends ConsumerWidget {
       context: context,
       firstDate: primeiro,
       lastDate: ultimo,
-      initialDateRange: DateTimeRange(start: dentro(atual.inicio), end: dentro(atual.fim)),
+      initialDateRange:
+          DateTimeRange(start: dentro(atual.inicio), end: dentro(atual.fim)),
       helpText: 'Selecione o período',
       saveText: 'Aplicar',
     );
@@ -50,9 +50,6 @@ class FiltroPeriodoBar extends ConsumerWidget {
         crossAxisAlignment: WrapCrossAlignment.center,
         children: <Widget>[
           const Text('Período', style: AppTextStyles.label),
-          // Opções lado a lado num único bloco, como um seletor de sistema:
-          // fica claro que só uma vale por vez.
-          // No celular as opções não cabem lado a lado: rolam na horizontal.
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: DecoratedBox(

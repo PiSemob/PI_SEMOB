@@ -1,40 +1,29 @@
 import 'package:flutter/material.dart';
 
-/// Identidade visual Ferret: painel institucional em azul-claro. Superfícies
-/// planas separadas por filetes finos, um azul próprio e sóbrio para as ações
-/// e a família IBM Plex (Sans na interface, Mono nos números).
 class AppColors {
   const AppColors._();
 
-  /// Tinta: azul-ardósia escuro dos textos principais e dos tooltips.
   static const Color ink = Color(0xFF14233A);
 
-  // Navegação lateral: o tom mais claro de azul, que identifica o sistema.
   static const Color sidebar = Color(0xFFEDF3FA);
   static const Color sidebarHover = Color(0xFFE2ECF7);
   static const Color sidebarActive = Color(0xFFD6E4F3);
   static const Color sidebarText = Color(0xFF41546E);
 
-  // Marca: o fundo do login, um degradê de azul bem claro.
   static const Color brandTop = Color(0xFFEEF4FA);
   static const Color brandBottom = Color(0xFFDCE8F5);
   static const Color fundoLogin = Color(0xFFE6EFF9);
 
-  // Mapa do município no login: azuis claros, sem saturação.
   static const Color mapaMunicipio = brandBottom;
   static const Color mapaContorno = Color(0xFF7FAEDF);
   static const Color mapaBairro = Color(0xFFC3D6EA);
   static const Color mapaVia = surface;
 
-  /// Sombra leve e neutra, a única permitida no app.
-  static const Color sombra = Color(0x1414233A); // ink com alpha 0,08
+  static const Color sombra = Color(0x1414233A);
 
-  /// Destaque: azul médio, usado em seleção, séries secundárias e estados
-  /// "ok" (em rota, conectado, processado).
   static const Color accent = Color(0xFF3D7CC9);
   static const Color accentSoft = Color(0xFFE3EDF8);
 
-  // Ação.
   static const Color primary = Color(0xFF1F5FA8);
   static const Color primaryHover = Color(0xFF184D8A);
   static const Color primarySoft = Color(0xFFE8F0FA);
@@ -44,7 +33,6 @@ class AppColors {
   static const Color warning = Color(0xFFB7791F);
   static const Color danger = Color(0xFFC0392B);
   static const Color teal = Color(0xFF2F7F86);
-  static const Color purple = Color(0xFF5A6B9C);
 
   static const Color background = Color(0xFFF5F8FC);
   static const Color surface = Color(0xFFFFFFFF);
@@ -56,7 +44,6 @@ class AppColors {
   static const Color textSecondary = Color(0xFF52647C);
   static const Color textMuted = Color(0xFF8595AA);
 
-  /// Sequência usada nos gráficos (demanda, receita, créditos, frota).
   static const List<Color> chart = <Color>[
     primary,
     Color(0xFF7FAEDF),
@@ -76,14 +63,11 @@ class AppSpacing {
   static const double lg = 24;
   static const double xl = 32;
 
-  // Cantos arredondados, mas sem virar "bolha": controles com 8 e painéis com 12.
   static const double radiusSm = 8;
   static const double radius = 12;
   static const double radiusPill = 999;
 }
 
-/// IBM Plex Sans é a fonte da interface (aplicada pelo tema). Os valores
-/// numéricos usam IBM Plex Mono, que alinha os dígitos como num relatório.
 class AppTextStyles {
   const AppTextStyles._();
 
@@ -136,7 +120,6 @@ class AppTextStyles {
     color: AppColors.textSecondary,
   );
 
-  /// Rótulo pequeno dos indicadores, das tabelas e dos grupos de navegação.
   static const TextStyle overline = TextStyle(
     fontSize: 11,
     fontWeight: FontWeight.w600,
@@ -233,7 +216,6 @@ class AppTheme {
         ),
         border: _borda(AppColors.borderStrong),
         enabledBorder: _borda(AppColors.borderStrong),
-        // Foco nítido, de 2 px: indispensável para quem usa o teclado.
         focusedBorder: _borda(AppColors.primary, 2),
         errorBorder: _borda(AppColors.danger),
         focusedErrorBorder: _borda(AppColors.danger, 2),

@@ -2,42 +2,14 @@ import 'package:flutter/material.dart';
 
 import '../../core/theme/app_theme.dart';
 
-class Responsivo {
-  const Responsivo._();
-
-  static bool mobile(BuildContext c) => MediaQuery.sizeOf(c).width < 700;
-  static bool tablet(BuildContext c) {
-    final double w = MediaQuery.sizeOf(c).width;
-    return w >= 700 && w < 1100;
-  }
-
-  static bool desktop(BuildContext c) => MediaQuery.sizeOf(c).width >= 1100;
-
-  static int colunas(BuildContext c) {
-    if (desktop(c)) return 4;
-    if (tablet(c)) return 2;
-    return 1;
-  }
-}
-
 class AppCard extends StatelessWidget {
-  const AppCard({super.key, required this.child, this.padding, this.onTap});
+  const AppCard({super.key, required this.child, this.padding});
 
   final Widget child;
   final EdgeInsetsGeometry? padding;
 
-  /// Quando informado, o card inteiro vira clicável.
-  final VoidCallback? onTap;
-
   @override
   Widget build(BuildContext context) {
-    final Widget conteudo = Padding(
-      padding: padding ?? const EdgeInsets.all(AppSpacing.lg - 4),
-      child: child,
-    );
-
-    // Painel plano com filete: a hierarquia vem do espaço e da tipografia,
-    // não de sombras.
     return Material(
       color: AppColors.surface,
       clipBehavior: Clip.antiAlias,
@@ -45,112 +17,10 @@ class AppCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppSpacing.radius),
         side: const BorderSide(color: AppColors.border),
       ),
-      child: onTap == null ? conteudo : InkWell(onTap: onTap, child: conteudo),
-    );
-  }
-}
-
-/// Separador fino. O nome foi mantido porque as telas já o usam.
-class Hachura extends StatelessWidget {
-  const Hachura({super.key, this.altura = 1});
-
-  final double altura;
-
-  @override
-  Widget build(BuildContext context) => Divider(height: altura);
-}
-
-class AppMetricCard extends StatelessWidget {
-  const AppMetricCard({
-    super.key,
-    required this.titulo,
-    required this.valor,
-    this.icone,
-    this.variacao,
-    this.variacaoLabel = 'vs período anterior',
-    this.detalhe,
-    this.cor,
-  });
-
-  final String titulo;
-  final String valor;
-  final IconData? icone;
-
-  final double? variacao;
-  final String variacaoLabel;
-
-  final String? detalhe;
-  final Color? cor;
-
-  @override
-  Widget build(BuildContext context) {
-    return AppCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              Expanded(
-                child: Text(
-                  titulo,
-                  maxLines: 2,
-                  style: AppTextStyles.label.copyWith(
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-              ),
-              if (icone != null) ...<Widget>[
-                const SizedBox(width: AppSpacing.sm),
-                Icon(icone, size: 18, color: cor ?? AppColors.secondary),
-              ],
-            ],
-          ),
-          const SizedBox(height: 12),
-          FittedBox(
-            fit: BoxFit.scaleDown,
-            alignment: Alignment.centerLeft,
-            child: Text(valor, style: AppTextStyles.metric),
-          ),
-          if (variacao != null) ...<Widget>[
-            const SizedBox(height: AppSpacing.sm),
-            _Variacao(valor: variacao!, label: variacaoLabel),
-          ] else if (detalhe != null) ...<Widget>[
-            const SizedBox(height: AppSpacing.sm),
-            Text(detalhe!, style: AppTextStyles.caption),
-          ],
-        ],
+      child: Padding(
+        padding: padding ?? const EdgeInsets.all(AppSpacing.lg - 4),
+        child: child,
       ),
-    );
-  }
-}
-
-class _Variacao extends StatelessWidget {
-  const _Variacao({required this.valor, required this.label});
-
-  final double valor;
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    final bool positiva = valor >= 0;
-    final Color cor = positiva ? AppColors.success : AppColors.danger;
-
-    return Text.rich(
-      TextSpan(
-        children: <InlineSpan>[
-          TextSpan(
-            text: '${positiva ? '▲' : '▼'} '
-                '${valor.abs().toStringAsFixed(1).replaceAll('.', ',')}%',
-            style: TextStyle(color: cor, fontWeight: FontWeight.w600),
-          ),
-          TextSpan(text: '  $label'),
-        ],
-      ),
-      maxLines: 1,
-      overflow: TextOverflow.ellipsis,
-      style: AppTextStyles.caption,
     );
   }
 }
@@ -172,8 +42,6 @@ class AppButton extends StatelessWidget {
   final bool secundario;
   final bool carregando;
 
-  /// Botão do tamanho do texto (barras e cabeçalhos), em vez de ocupar a
-  /// largura toda como nos formulários.
   final bool compacto;
 
   @override
@@ -225,7 +93,6 @@ class AppTextField extends StatefulWidget {
   final String? hint;
   final IconData? icone;
 
-  /// Campo de senha. Ganha um botão para mostrar ou ocultar o texto.
   final bool obscure;
   final TextInputType? keyboardType;
   final String? Function(String?)? validator;
@@ -312,12 +179,10 @@ class EmptyState extends StatelessWidget {
     super.key,
     required this.mensagem,
     this.icone = Icons.inbox_outlined,
-    this.acao,
   });
 
   final String mensagem;
   final IconData icone;
-  final Widget? acao;
 
   @override
   Widget build(BuildContext context) {
@@ -334,10 +199,6 @@ class EmptyState extends StatelessWidget {
               textAlign: TextAlign.center,
               style: AppTextStyles.caption,
             ),
-            if (acao != null) ...<Widget>[
-              const SizedBox(height: AppSpacing.md),
-              acao!,
-            ],
           ],
         ),
       ),
@@ -389,36 +250,6 @@ class TagFiltro extends StatelessWidget {
   }
 }
 
-class GradeCards extends StatelessWidget {
-  const GradeCards({super.key, required this.itens, this.colunasDesktop = 4});
-
-  final List<Widget> itens;
-  final int colunasDesktop;
-
-  @override
-  Widget build(BuildContext context) {
-    final int colunas = Responsivo.desktop(context)
-        ? colunasDesktop
-        : Responsivo.colunas(context);
-    return LayoutBuilder(
-      builder: (BuildContext context, BoxConstraints constraints) {
-        final double largura =
-            (constraints.maxWidth - (colunas - 1) * AppSpacing.md) / colunas;
-        return Wrap(
-          spacing: AppSpacing.md,
-          runSpacing: AppSpacing.md,
-          children: <Widget>[
-            for (final Widget item in itens)
-              SizedBox(width: largura, child: item),
-          ],
-        );
-      },
-    );
-  }
-}
-
-/// Caminhos das imagens de logo. Os arquivos ficam em front/assets/logos/.
-/// Enquanto um arquivo não existir, o app mostra uma marca desenhada no lugar.
 class AppLogos {
   const AppLogos._();
 
@@ -426,13 +257,9 @@ class AppLogos {
   static const String scs = 'assets/logos/scs.png';
 }
 
-/// Logo do Ferret: a imagem (ou a marca reserva) e o nome ao lado.
 class AppLogo extends StatelessWidget {
-  const AppLogo({super.key, this.escuro = false, this.compacto = false});
+  const AppLogo({super.key, this.compacto = false});
 
-  /// Mantido para as telas que já passam este parâmetro. Com o tema claro, o
-  /// logo tem a mesma aparência nos dois casos.
-  final bool escuro;
   final bool compacto;
 
   @override
@@ -498,12 +325,10 @@ class AppLogo extends StatelessWidget {
   }
 }
 
-/// Logo da Prefeitura de São Caetano do Sul, com a legenda da secretaria.
 class LogoScs extends StatelessWidget {
-  const LogoScs({super.key, this.altura = 34, this.comLegenda = true});
+  const LogoScs({super.key, this.altura = 34});
 
   final double altura;
-  final bool comLegenda;
 
   @override
   Widget build(BuildContext context) {
@@ -532,8 +357,6 @@ class LogoScs extends StatelessWidget {
         ),
       ),
     );
-
-    if (!comLegenda) return imagem;
 
     return Row(
       mainAxisSize: MainAxisSize.min,
@@ -571,7 +394,6 @@ class LogoScs extends StatelessWidget {
   }
 }
 
-/// Fundo do painel de marca (tela de login): azul-claro liso.
 class FundoMarca extends StatelessWidget {
   const FundoMarca({super.key, required this.child});
 
@@ -588,146 +410,6 @@ class FundoMarca extends StatelessWidget {
         ),
       ),
       child: child,
-    );
-  }
-}
-
-/// Diagrama de linha no estilo da sinalização do transporte: trecho reto,
-/// paradas marcadas e uma estação de integração. É a "assinatura" visual do
-/// Ferret no login, ligada ao que o sistema acompanha.
-class DiagramaLinha extends StatelessWidget {
-  const DiagramaLinha({super.key, this.paradas = _padrao});
-
-  static const List<String> _padrao = <String>[
-    'Term. Santa Paula',
-    'Centro',
-    'Barcelona',
-    'Cerâmica',
-    'Fundação',
-  ];
-
-  final List<String> paradas;
-
-  @override
-  Widget build(BuildContext context) {
-    return Semantics(
-      label: 'Diagrama de linha: ${paradas.join(', ')}',
-      child: SizedBox(
-        height: 92,
-        width: double.infinity,
-        child: CustomPaint(painter: _LinhaPainter(paradas)),
-      ),
-    );
-  }
-}
-
-class _LinhaPainter extends CustomPainter {
-  const _LinhaPainter(this.paradas);
-
-  final List<String> paradas;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    const double y = 22;
-    const double margem = 8;
-    final double passo = (size.width - 2 * margem) / (paradas.length - 1);
-
-    // Ramal que sai da segunda parada em 45°, como num mapa de metrô.
-    final double xIntegracao = margem + passo;
-    final Paint ramal = Paint()
-      ..color = AppColors.chart[1]
-      ..strokeWidth = 5
-      ..style = PaintingStyle.stroke
-      ..strokeCap = StrokeCap.round;
-    canvas.drawPath(
-      Path()
-        ..moveTo(xIntegracao, y)
-        ..lineTo(xIntegracao + 14, y - 14)
-        ..lineTo(xIntegracao + passo * 1.4, y - 14),
-      ramal,
-    );
-
-    canvas.drawLine(
-      const Offset(margem, y),
-      Offset(size.width - margem, y),
-      Paint()
-        ..color = AppColors.primary
-        ..strokeWidth = 5
-        ..strokeCap = StrokeCap.round,
-    );
-
-    for (int i = 0; i < paradas.length; i++) {
-      final double x = margem + passo * i;
-      final bool terminal = i == 0 || i == paradas.length - 1;
-      final bool integracao = i == 1;
-
-      if (integracao) {
-        final RRect r = RRect.fromRectAndRadius(
-          Rect.fromCenter(center: Offset(x, y - 7), width: 14, height: 28),
-          const Radius.circular(7),
-        );
-        canvas.drawRRect(r, Paint()..color = Colors.white);
-        canvas.drawRRect(
-          r,
-          Paint()
-            ..color = AppColors.ink
-            ..style = PaintingStyle.stroke
-            ..strokeWidth = 2,
-        );
-      } else {
-        canvas.drawCircle(
-            Offset(x, y), terminal ? 7 : 5, Paint()..color = Colors.white);
-        canvas.drawCircle(
-          Offset(x, y),
-          terminal ? 7 : 5,
-          Paint()
-            ..color = terminal ? AppColors.ink : AppColors.primary
-            ..style = PaintingStyle.stroke
-            ..strokeWidth = terminal ? 2.5 : 2,
-        );
-      }
-
-      final TextPainter nome = TextPainter(
-        text: TextSpan(
-          text: paradas[i],
-          style: TextStyle(
-            fontFamily: 'IBM Plex Sans',
-            fontSize: 11,
-            fontWeight:
-                terminal || integracao ? FontWeight.w600 : FontWeight.w400,
-            color: AppColors.textSecondary,
-          ),
-        ),
-        textDirection: TextDirection.ltr,
-        maxLines: 2,
-        textAlign: TextAlign.center,
-      )..layout(maxWidth: passo - 4);
-      final double dx =
-          (x - nome.width / 2).clamp(0, size.width - nome.width).toDouble();
-      nome.paint(canvas, Offset(dx, y + 16));
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant _LinhaPainter oldDelegate) =>
-      oldDelegate.paradas != paradas;
-}
-
-class ChipMarca extends StatelessWidget {
-  const ChipMarca(this.texto, {super.key});
-
-  final String texto;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-        border: Border.all(color: AppColors.border),
-      ),
-      child: Text(texto, style: AppTextStyles.caption),
     );
   }
 }
