@@ -26,7 +26,7 @@ dependencies = [
 
 
 [project.optional-dependencies]
-dev = ["pytest", "httpx", "ruff", "pytest-cov", "pytest-html", "pytest-bdd"]
+dev = ["pytest<9.2", "httpx", "ruff", "pytest-cov", "pytest-html", "pytest-bdd"]
 
 [tool.setuptools.packages.find]
 include = ["app*"]
