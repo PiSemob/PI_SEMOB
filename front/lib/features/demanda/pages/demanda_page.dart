@@ -17,18 +17,20 @@ class DemandaPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final FiltroDemanda filtro = ref.watch(filtroDemandaProvider);
-
-    List<PontoSerie> pagantes = DadosExemplo.serieDiaria(21700);
-    List<PontoSerie> gratuidades = DadosExemplo.serieDiaria(6900);
-    if (filtro.ocultarFinaisDeSemana) {
-      bool util(PontoSerie p) => p.valor > 15000;
-      pagantes = pagantes.where(util).toList();
-      gratuidades = gratuidades.take(pagantes.length).toList();
-    }
+    final List<LinhaOnibus> linhas = DadosExemplo.linhasFiltradas(
+      linha: filtro.linha,
+      empresa: filtro.empresa,
+    );
+    final String escopo = switch ((filtro.linha, filtro.empresa)) {
+      (null, null) => 'Todas as linhas',
+      (final String l, _) => 'Linha $l',
+      (null, final String e) => 'Linhas da $e',
+    };
 
     return PaginaConteudo(
       barraSuperior: const Column(
         mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
           FiltroPeriodoBar(),
           FiltrosDemanda(),
@@ -77,57 +79,14 @@ class DemandaPage extends ConsumerWidget {
           ],
         ),
         GraficoCard(
-          titulo: 'Curva de Demanda',
-          subtitulo: 'Composição por tipo de passagem',
+          titulo: 'Tendência de Passageiros',
+          subtitulo: '$escopo · últimos 12 meses',
           altura: 300,
-          acao: const Row(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              LegendaItem(cor: AppColors.danger, texto: 'Gratuidades'),
-              SizedBox(width: AppSpacing.md),
-              LegendaItem(cor: AppColors.primary, texto: 'Pagantes'),
-            ],
-          ),
           child: GraficoLinha(
-            serie: pagantes,
-            serieSecundaria: gratuidades,
-            corSecundaria: AppColors.danger,
+            serie: DadosExemplo.passageirosMensais(linhas),
+            curva: true,
+            iniciarEmZero: false,
           ),
-        ),
-        LayoutBuilder(
-          builder: (BuildContext context, BoxConstraints c) {
-            final Widget mensal = GraficoCard(
-              titulo: 'Tendência Mensal',
-              subtitulo: '12 meses',
-              child: GraficoLinha(
-                serie: DadosExemplo.serieMensal(950000),
-                cor: AppColors.accent,
-              ),
-            );
-            final Widget porLinha = GraficoCard(
-              titulo: 'Passageiros por Linha',
-              subtitulo: 'Comparação do período',
-              child: GraficoBarras(serie: DadosExemplo.passageirosPorLinha),
-            );
-
-            if (c.maxWidth < 1000) {
-              return Column(
-                children: <Widget>[
-                  mensal,
-                  const SizedBox(height: AppSpacing.md),
-                  porLinha,
-                ],
-              );
-            }
-            return Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Expanded(child: mensal),
-                const SizedBox(width: AppSpacing.md),
-                Expanded(child: porLinha),
-              ],
-            );
-          },
         ),
         AppCard(
           padding: const EdgeInsets.all(AppSpacing.lg),
@@ -136,7 +95,7 @@ class DemandaPage extends ConsumerWidget {
             children: <Widget>[
               const AppSectionTitle(
                 'Demanda por Linha — Detalhamento',
-                subtitulo: 'Passageiros estimados no período',
+                subtitulo: 'Passageiros estimados no último mês',
               ),
               SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
@@ -149,7 +108,7 @@ class DemandaPage extends ConsumerWidget {
                     DataColumn(label: Text('PASSAGEIROS')),
                   ],
                   rows: <DataRow>[
-                    for (final LinhaOnibus l in DadosExemplo.linhas)
+                    for (final LinhaOnibus l in linhas)
                       DataRow(
                         cells: <DataCell>[
                           DataCell(Text(l.codigo,
@@ -157,7 +116,7 @@ class DemandaPage extends ConsumerWidget {
                           DataCell(Text(l.nome)),
                           DataCell(Text(l.empresa)),
                           DataCell(Text('${l.viagens}')),
-                          DataCell(Text(fmtInteiro(l.viagens * 280))),
+                          DataCell(Text(fmtInteiro(DadosExemplo.passageirosNoMes(l)))),
                         ],
                       ),
                   ],

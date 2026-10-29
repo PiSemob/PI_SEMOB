@@ -114,12 +114,12 @@ class DadosExemplo {
 
   static final DateFormat _diaMes = DateFormat('dd/MM');
 
-  static List<PontoSerie> serieDiaria(double base, {int dias = 30}) {
+  static List<PontoSerie> serieDiaria(double base, {int dias = 30, int fase = 0}) {
     final DateTime hoje = DateTime.now();
     final List<PontoSerie> pontos = <PontoSerie>[];
     for (int i = dias - 1; i >= 0; i--) {
       final DateTime d = hoje.subtract(Duration(days: i));
-      final double fator = d.weekday >= 6 ? 0.52 : 0.94 + (i % 7) * 0.02;
+      final double fator = d.weekday >= 6 ? 0.52 : 0.94 + ((i + fase) % 7) * 0.02;
       pontos.add(PontoSerie(_diaMes.format(d), base * fator));
     }
     return pontos;
@@ -130,16 +130,84 @@ class DadosExemplo {
     'Abr/26', 'Mai/26', 'Jun/26', 'Jul/26', 'Ago/26', 'Set/26',
   ];
 
-  static List<PontoSerie> serieMensal(double base) {
+  static List<PontoSerie> serieMensal(double base, {int fase = 0}) {
     const List<double> variacao = <double>[
       0.88, 0.92, 0.85, 0.90, 0.87, 0.95,
       0.97, 1.00, 0.96, 0.93, 1.02, 0.99,
     ];
+    double ajuste(int i) => fase == 0 ? 1 : 1 + (((i + 1) * fase) % 5 - 2) * 0.015;
     return <PontoSerie>[
       for (int i = 0; i < meses.length; i++)
-        PontoSerie(meses[i], base * variacao[i]),
+        PontoSerie(meses[i], base * variacao[i] * ajuste(i)),
     ];
   }
+
+  static const double passageirosHoje = 34800;
+  static const double receitaHoje = 78039;
+  static const double pagantesHoje = 27144;
+  static const double gratuidadesHoje = 7656;
+
+  static const List<PontoSerie> formasPagamento = <PontoSerie>[
+    PontoSerie('Bilhete', 18096),
+    PontoSerie('Gratuidade', gratuidadesHoje),
+    PontoSerie('Débito', 5220),
+    PontoSerie('Crédito', 3828),
+  ];
+
+  static const double _passageirosMes = 950000;
+
+  static int get _viagensTotais =>
+      linhas.fold(0, (int soma, LinhaOnibus l) => soma + l.viagens);
+
+  /// Linhas que passam pelos filtros. `empresa` é a sigla (ABC, MET, NSC).
+  static List<LinhaOnibus> linhasFiltradas({String? linha, String? empresa}) {
+    final String? nomeEmpresa = empresa == null
+        ? null
+        : empresas.firstWhere((Empresa e) => e.sigla == empresa).nome;
+    return <LinhaOnibus>[
+      for (final LinhaOnibus l in linhas)
+        if ((linha == null || l.codigo == linha) &&
+            (nomeEmpresa == null || l.empresa == nomeEmpresa))
+          l,
+    ];
+  }
+
+  /// Passageiros por dia do sistema todo (`linha` nula) ou de uma linha.
+  static List<PontoSerie> passageirosDiarios({String? linha, int dias = 30}) {
+    if (linha == null) return serieDiaria(passageirosHoje, dias: dias);
+    final int i = linhas.indexWhere((LinhaOnibus l) => l.codigo == linha);
+    final double base = passageirosHoje * linhas[i].viagens / _viagensTotais;
+    return serieDiaria(base, dias: dias, fase: i + 1);
+  }
+
+  /// Receita por dia, na mesma proporção receita/passageiro do dashboard.
+  static List<PontoSerie> receitaDiaria({String? linha, int dias = 30}) {
+    const double porPassageiro = receitaHoje / passageirosHoje;
+    return <PontoSerie>[
+      for (final PontoSerie p in passageirosDiarios(linha: linha, dias: dias))
+        PontoSerie(p.rotulo, p.valor * porPassageiro),
+    ];
+  }
+
+  /// Passageiros por mês, somando as linhas.
+  static List<PontoSerie> passageirosMensais(List<LinhaOnibus> selecionadas) {
+    if (selecionadas.isEmpty) return const <PontoSerie>[];
+    final List<double> soma = List<double>.filled(meses.length, 0);
+    for (final LinhaOnibus l in selecionadas) {
+      final double base = _passageirosMes * l.viagens / _viagensTotais;
+      final List<PontoSerie> serie = serieMensal(base, fase: linhas.indexOf(l) + 1);
+      for (int i = 0; i < meses.length; i++) {
+        soma[i] += serie[i].valor;
+      }
+    }
+    return <PontoSerie>[
+      for (int i = 0; i < meses.length; i++) PontoSerie(meses[i], soma[i]),
+    ];
+  }
+
+  /// Passageiros estimados de uma linha no mês mais recente.
+  static double passageirosNoMes(LinhaOnibus l) =>
+      passageirosMensais(<LinhaOnibus>[l]).last.valor;
 
   static const List<Empresa> empresas = <Empresa>[
     Empresa(
@@ -434,11 +502,6 @@ class DadosExemplo {
 
   static List<PontoSerie> get receitaPorEmpresa => <PontoSerie>[
         for (final Empresa e in empresas) PontoSerie(e.sigla, e.receita),
-      ];
-
-  static List<PontoSerie> get passageirosPorLinha => <PontoSerie>[
-        for (final LinhaOnibus l in linhas)
-          PontoSerie(l.codigo, l.viagens * 280),
       ];
 
   static List<PontoSerie> get receitaPorLinha => <PontoSerie>[

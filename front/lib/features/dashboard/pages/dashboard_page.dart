@@ -17,147 +17,61 @@ class DashboardPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final FiltroPeriodo filtro = ref.watch(filtroPeriodoProvider);
 
-    final List<PontoSerie> passageiros = DadosExemplo.serieDiaria(34800);
-    final List<PontoSerie> anterior = <PontoSerie>[
-      for (final PontoSerie p in passageiros) PontoSerie(p.rotulo, p.valor * 0.92),
-    ];
-
     return PaginaConteudo(
       barraSuperior: const FiltroPeriodoBar(),
       children: <Widget>[
         GradeCards(
+          colunasDesktop: 3,
           itens: <Widget>[
             AppMetricCard(
-              titulo: 'Passageiros do dia',
-              valor: fmtInteiro(34800),
-              icone: Icons.people_outline,
-              variacao: -1.1,
-              variacaoLabel: 'vs ontem',
-            ),
-            const AppMetricCard(
-              titulo: 'Passageiros da semana',
-              valor: '216.8k',
-              icone: Icons.calendar_view_week_outlined,
-              variacao: 2.8,
-            ),
-            const AppMetricCard(
-              titulo: 'Passageiros do mês',
-              valor: '945.2k',
-              icone: Icons.trending_up,
-              variacao: 0,
-            ),
-            const AppMetricCard(
-              titulo: 'Passageiros 15 dias',
-              valor: '470.7k',
-              icone: Icons.bar_chart,
-              variacao: 1.4,
-            ),
-            AppMetricCard(
               titulo: 'Receita do dia',
-              valor: fmtMoeda(78039),
+              valor: fmtMoeda(DadosExemplo.receitaHoje),
               icone: Icons.attach_money,
               cor: AppColors.accent,
               variacao: -1.1,
               variacaoLabel: 'vs ontem',
             ),
             AppMetricCard(
-              titulo: 'Receita do mês',
-              valor: fmtMoeda(2119683),
-              icone: Icons.work_outline,
-              cor: AppColors.accent,
-              variacao: 0,
-            ),
-            AppMetricCard(
-              titulo: 'Total gratuidades',
-              valor: fmtInteiro(207954),
-              icone: Icons.favorite_border,
-              cor: AppColors.danger,
-              detalhe: '22% dos passageiros',
-            ),
-            AppMetricCard(
               titulo: 'Passageiros pagantes',
-              valor: fmtInteiro(652210),
+              valor: fmtInteiro(DadosExemplo.pagantesHoje),
               icone: Icons.credit_card_outlined,
               cor: AppColors.teal,
-              detalhe: '69% dos passageiros',
+              detalhe: '${_percentual(DadosExemplo.pagantesHoje)} dos passageiros de hoje',
+            ),
+            AppMetricCard(
+              titulo: 'Gratuidades',
+              valor: fmtInteiro(DadosExemplo.gratuidadesHoje),
+              icone: Icons.favorite_border,
+              cor: AppColors.danger,
+              detalhe: '${_percentual(DadosExemplo.gratuidadesHoje)} dos passageiros de hoje',
             ),
           ],
         ),
         LayoutBuilder(
           builder: (BuildContext context, BoxConstraints c) {
-            final Widget cardPassageiros = GraficoCard(
-              titulo: 'Passageiros & Receita',
-              subtitulo: filtro.comparar
-                  ? 'Linha tracejada = período anterior'
-                  : filtro.descricao,
+            final Widget desempenho = _GraficoDesempenho(filtro: filtro);
+            const Widget pagamentos = GraficoCard(
+              titulo: 'Formas de Pagamento',
+              subtitulo: 'Passageiros de hoje por tipo de pagamento',
               altura: 280,
-              acao: const Row(
-                mainAxisSize: MainAxisSize.min,
-                children: <Widget>[
-                  LegendaItem(cor: AppColors.accent, texto: 'Passageiros'),
-                  SizedBox(width: AppSpacing.md),
-                  LegendaItem(cor: AppColors.primary, texto: 'Receita'),
-                ],
-              ),
-              child: GraficoLinha(
-                serie: passageiros,
-                comparacao: filtro.comparar ? anterior : null,
-                cor: AppColors.accent,
-              ),
-            );
-            final Widget evolucao = GraficoCard(
-              titulo: 'Evolução Mensal',
-              subtitulo: '12 meses · passageiros',
-              altura: 280,
-              child: GraficoBarras(serie: DadosExemplo.serieMensal(950000)),
+              child: GraficoPizza(serie: DadosExemplo.formasPagamento),
             );
 
             if (c.maxWidth < 1000) {
               return Column(
                 children: <Widget>[
-                  cardPassageiros,
+                  desempenho,
                   const SizedBox(height: AppSpacing.md),
-                  evolucao,
+                  pagamentos,
                 ],
               );
             }
             return Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                Expanded(flex: 3, child: cardPassageiros),
+                Expanded(flex: 3, child: desempenho),
                 const SizedBox(width: AppSpacing.md),
-                Expanded(flex: 2, child: evolucao),
-              ],
-            );
-          },
-        ),
-        LayoutBuilder(
-          builder: (BuildContext context, BoxConstraints c) {
-            final Widget linhas = GraficoCard(
-              titulo: 'Desempenho por Linha',
-              subtitulo: 'Passageiros e receita por linha hoje',
-              child: GraficoBarras(
-                serie: DadosExemplo.receitaPorLinha,
-                cor: AppColors.accent,
-              ),
-            );
-            const Widget frota = _StatusFrota();
-
-            if (c.maxWidth < 1000) {
-              return Column(
-                children: <Widget>[
-                  linhas,
-                  const SizedBox(height: AppSpacing.md),
-                  frota,
-                ],
-              );
-            }
-            return Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Expanded(flex: 3, child: linhas),
-                const SizedBox(width: AppSpacing.md),
-                const Expanded(flex: 2, child: frota),
+                const Expanded(flex: 2, child: pagamentos),
               ],
             );
           },
@@ -167,73 +81,120 @@ class DashboardPage extends ConsumerWidget {
   }
 }
 
-class _StatusFrota extends StatelessWidget {
-  const _StatusFrota();
+String _percentual(double valor) =>
+    '${(valor / DadosExemplo.passageirosHoje * 100).round()}%';
+
+enum _Indicador { passageiros, receita }
+
+/// Gráfico de linha com filtros de indicador e de linha de ônibus.
+class _GraficoDesempenho extends StatefulWidget {
+  const _GraficoDesempenho({required this.filtro});
+
+  final FiltroPeriodo filtro;
+
+  @override
+  State<_GraficoDesempenho> createState() => _GraficoDesempenhoState();
+}
+
+class _GraficoDesempenhoState extends State<_GraficoDesempenho> {
+  _Indicador _indicador = _Indicador.passageiros;
+  String? _linha;
 
   @override
   Widget build(BuildContext context) {
-    return const AppCard(
-      padding: EdgeInsets.all(AppSpacing.lg),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+    final int dias = (widget.filtro.fim.difference(widget.filtro.inicio).inDays + 1)
+        .clamp(7, 90);
+    final bool receita = _indicador == _Indicador.receita;
+    final List<PontoSerie> serie = receita
+        ? DadosExemplo.receitaDiaria(linha: _linha, dias: dias)
+        : DadosExemplo.passageirosDiarios(linha: _linha, dias: dias);
+    final List<PontoSerie>? anterior = widget.filtro.comparar
+        ? <PontoSerie>[
+            for (final PontoSerie p in serie) PontoSerie(p.rotulo, p.valor * 0.92),
+          ]
+        : null;
+
+    final String escopo = _linha == null
+        ? 'Sistema'
+        : '$_linha · ${DadosExemplo.linhas.firstWhere((LinhaOnibus l) => l.codigo == _linha).nome}';
+
+    return GraficoCard(
+      titulo: 'Desempenho',
+      subtitulo: '$escopo · últimos $dias dias',
+      altura: 280,
+      acao: widget.filtro.comparar
+          ? const LegendaItem(cor: AppColors.textMuted, texto: 'Período anterior')
+          : null,
+      filtros: Wrap(
+        spacing: AppSpacing.xs,
+        runSpacing: AppSpacing.sm,
+        crossAxisAlignment: WrapCrossAlignment.center,
         children: <Widget>[
-          AppSectionTitle(
-            'Status da Frota',
-            subtitulo: 'Situação dos veículos agora',
+          TagFiltro(
+            texto: 'Passageiros',
+            ativa: !receita,
+            onTap: () => setState(() => _indicador = _Indicador.passageiros),
           ),
-          Row(
-            children: <Widget>[
-              Expanded(
-                child: _Situacao(
-                  valor: '42',
-                  rotulo: 'Em operação',
-                  cor: AppColors.accent,
-                ),
-              ),
-              SizedBox(width: AppSpacing.md),
-              Expanded(
-                child: _Situacao(
-                  valor: '6',
-                  rotulo: 'Em manutenção',
-                  cor: AppColors.warning,
-                ),
-              ),
-            ],
+          TagFiltro(
+            texto: 'Receita (R\$)',
+            ativa: receita,
+            onTap: () => setState(() => _indicador = _Indicador.receita),
+          ),
+          const SizedBox(width: AppSpacing.sm),
+          _SeletorLinha(
+            linha: _linha,
+            onChanged: (String? l) => setState(() => _linha = l),
           ),
         ],
+      ),
+      child: GraficoLinha(
+        serie: serie,
+        comparacao: anterior,
+        cor: receita ? AppColors.accent : AppColors.primary,
+        curva: true,
+        formatarEixo: receita ? (num v) => 'R\$ ${fmtCompacto(v)}' : fmtCompacto,
+        formatarValor: receita ? fmtMoeda : fmtInteiro,
       ),
     );
   }
 }
 
-class _Situacao extends StatelessWidget {
-  const _Situacao({
-    required this.valor,
-    required this.rotulo,
-    required this.cor,
-  });
+class _SeletorLinha extends StatelessWidget {
+  const _SeletorLinha({required this.linha, required this.onChanged});
 
-  final String valor;
-  final String rotulo;
-  final Color cor;
+  final String? linha;
+  final ValueChanged<String?> onChanged;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(AppSpacing.md),
+      height: 30,
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
       decoration: BoxDecoration(
-        color: cor.withValues(alpha: 0.10),
+        color: AppColors.surfaceMuted,
         borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          Text(
-            valor,
-            style: AppTextStyles.metric.copyWith(color: cor),
-          ),
-          Text(rotulo, style: AppTextStyles.caption),
-        ],
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<String?>(
+          value: linha,
+          isDense: true,
+          style: AppTextStyles.caption.copyWith(color: AppColors.textPrimary),
+          icon: const Icon(Icons.expand_more, size: 16),
+          onChanged: onChanged,
+          selectedItemBuilder: (BuildContext context) => <Widget>[
+            const Center(child: Text('Todas as linhas')),
+            for (final LinhaOnibus l in DadosExemplo.linhas)
+              Center(child: Text('Linha ${l.codigo}')),
+          ],
+          items: <DropdownMenuItem<String?>>[
+            const DropdownMenuItem<String?>(child: Text('Todas as linhas')),
+            for (final LinhaOnibus l in DadosExemplo.linhas)
+              DropdownMenuItem<String?>(
+                value: l.codigo,
+                child: Text('${l.codigo} · ${l.nome}'),
+              ),
+          ],
+        ),
       ),
     );
   }

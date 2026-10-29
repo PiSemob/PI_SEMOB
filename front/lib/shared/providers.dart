@@ -88,27 +88,20 @@ final NotifierProvider<FiltroPeriodoNotifier, FiltroPeriodo> filtroPeriodoProvid
 
 @immutable
 class FiltroDemanda {
-  const FiltroDemanda({
-    this.linha,
-    this.empresa,
-    this.ocultarFinaisDeSemana = false,
-  });
+  const FiltroDemanda({this.linha, this.empresa});
 
   final String? linha;
   final String? empresa;
-  final bool ocultarFinaisDeSemana;
 
   FiltroDemanda copyWith({
     String? linha,
     String? empresa,
-    bool? ocultarFinaisDeSemana,
     bool limparLinha = false,
     bool limparEmpresa = false,
   }) {
     return FiltroDemanda(
       linha: limparLinha ? null : (linha ?? this.linha),
       empresa: limparEmpresa ? null : (empresa ?? this.empresa),
-      ocultarFinaisDeSemana: ocultarFinaisDeSemana ?? this.ocultarFinaisDeSemana,
     );
   }
 }
@@ -122,9 +115,6 @@ class FiltroDemandaNotifier extends Notifier<FiltroDemanda> {
 
   void setEmpresa(String? empresa) =>
       state = state.copyWith(empresa: empresa, limparEmpresa: empresa == null);
-
-  void alternarFinaisDeSemana() =>
-      state = state.copyWith(ocultarFinaisDeSemana: !state.ocultarFinaisDeSemana);
 }
 
 final NotifierProvider<FiltroDemandaNotifier, FiltroDemanda> filtroDemandaProvider =
