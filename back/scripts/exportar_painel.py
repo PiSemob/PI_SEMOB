@@ -1,13 +1,3 @@
-"""Gera o arquivo de dados do app a partir dos relatórios em dados/brutos.
-
-Uso, de dentro de back/:  python -m scripts.exportar_painel
-
-Usa o mesmo ETL do `ingerir` (leitura e limpeza), mas em memória: não precisa
-do MongoDB, do PostgreSQL nem do .env. O resultado vai para
-front/assets/dados/painel.json e é o que as telas do app mostram enquanto a
-API não estiver pronta.
-"""
-
 import json
 from collections import defaultdict
 from datetime import date
@@ -24,9 +14,6 @@ RAIZ = Path(__file__).resolve().parents[2]
 PASTA_BRUTOS = RAIZ / "dados" / "brutos"
 SAIDA = RAIZ / "front" / "assets" / "dados" / "painel.json"
 
-# Nome e bairro de cada linha, tirados do campo "atendimento" dos relatórios de
-# viagens não realizadas/iniciadas/terminadas. A origem é a Estação São
-# Caetano, menos na linha 11, que sai do Fórum (no Centro).
 LINHAS = {
     "01": ("Estação – Santa Maria", "Estação São Caetano", "Santa Maria"),
     "02": ("Circular Gerty", "Estação São Caetano", "Nova Gerty"),
@@ -42,7 +29,6 @@ LINHAS = {
 
 
 def ler_relatorios() -> tuple[dict[str, pd.DataFrame], list[dict]]:
-    """Lê todos os HTMLs, limpa com o ETL do back e lista os arquivos lidos."""
     documentos: dict[str, list[dict]] = defaultdict(list)
     arquivos = []
     for caminho in sorted(PASTA_BRUTOS.rglob("*.html")):
@@ -73,7 +59,6 @@ def ler_relatorios() -> tuple[dict[str, pd.DataFrame], list[dict]]:
 
 
 def _numero(valor):
-    """Converte para tipos do JSON; vazio vira None."""
     if valor is None or pd.isna(valor):
         return None
     if isinstance(valor, float) and valor.is_integer():
@@ -98,7 +83,7 @@ def montar_painel(limpas: dict[str, pd.DataFrame], arquivos: list[dict]) -> dict
 
         diario.append({
             "data": d.isoformat(),
-            "dia_sem": d.weekday(),  # 0 = segunda
+            "dia_sem": d.weekday(),
             "veiculos": campo(geral, "nr_veiculos"),
             "viagens_programadas": campo(geral, "nr_viagens_progr"),
             "viagens_realizadas": campo(geral, "nr_viagens_realiz"),
@@ -122,7 +107,6 @@ def montar_painel(limpas: dict[str, pd.DataFrame], arquivos: list[dict]) -> dict
         for r in resumo_linha.sort_values(["data", "linha"]).itertuples()
     ]
 
-    # Viagens médias por faixa horária e dia da semana, por linha e no total.
     faixas = limpas["partidas_faixa_horaria"].copy()
     faixas["dia_sem"] = pd.to_datetime(faixas["data"]).dt.day_of_week
     dias_por_semana = faixas.groupby("dia_sem")["data"].nunique()
