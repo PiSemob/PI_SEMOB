@@ -17,7 +17,7 @@ class IntegracoesPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final List<FonteDados> fontes = DadosExemplo.fontesDados;
+    const List<FonteDados> fontes = DadosExemplo.fontesDados;
     int contar(String s) => fontes.where((FonteDados f) => f.status == s).length;
 
     return PaginaConteudo(
@@ -155,7 +155,7 @@ class _CardFonte extends StatelessWidget {
             Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: <Widget>[
-                Text('Última sync', style: AppTextStyles.overline),
+                const Text('Última sync', style: AppTextStyles.overline),
                 Text(fonte.ultimaSync, style: AppTextStyles.caption),
               ],
             ),

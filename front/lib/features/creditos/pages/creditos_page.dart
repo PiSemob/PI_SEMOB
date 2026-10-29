@@ -162,9 +162,9 @@ class _Anomalias extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
-                      Text('Set/26', style: AppTextStyles.label),
+                      const Text('Set/26', style: AppTextStyles.label),
                       const SizedBox(height: AppSpacing.xs),
-                      Text(
+                      const Text(
                         'Variação de saldo anormal detectada.',
                         style: AppTextStyles.caption,
                       ),
@@ -179,7 +179,7 @@ class _Anomalias extends StatelessWidget {
             ),
           ),
           const SizedBox(height: AppSpacing.md),
-          Text(
+          const Text(
             'Sistema monitora variações >20% no saldo mensal automaticamente '
             'via algoritmo de anomalia.',
             style: AppTextStyles.caption,

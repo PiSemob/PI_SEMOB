@@ -180,16 +180,16 @@ class _MeiosPagamento extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AppCard(
-      padding: const EdgeInsets.all(AppSpacing.lg),
+    return const AppCard(
+      padding: EdgeInsets.all(AppSpacing.lg),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          const AppSectionTitle(
+          AppSectionTitle(
             'Meios de Pagamento',
             subtitulo: 'Distribuição',
           ),
-          const SizedBox(
+          SizedBox(
             height: 220,
             child: GraficoPizza(
               serie: <PontoSerie>[
