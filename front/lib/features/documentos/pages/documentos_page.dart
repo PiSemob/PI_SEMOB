@@ -31,7 +31,7 @@ class _DocumentosPageState extends ConsumerState<DocumentosPage> {
 
   @override
   Widget build(BuildContext context) {
-    final List<DocumentoPdf> todos = DadosExemplo.documentos;
+    const List<DocumentoPdf> todos = DadosExemplo.documentos;
     int contar(String s) =>
         todos.where((DocumentoPdf d) => d.status == s).length;
 

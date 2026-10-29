@@ -84,7 +84,7 @@ class _RelatoriosPageState extends ConsumerState<RelatoriosPage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
                         Text(selecionado.nome, style: AppTextStyles.section),
-                        Text(
+                        const Text(
                           '15 de setembro de 2026 · SEMOB-SCS',
                           style: AppTextStyles.caption,
                         ),

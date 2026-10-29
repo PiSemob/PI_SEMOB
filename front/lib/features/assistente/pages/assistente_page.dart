@@ -119,7 +119,7 @@ class _CabecalhoAgente extends StatelessWidget {
             child: const Icon(Icons.auto_awesome, size: 18, color: Colors.white),
           ),
           const SizedBox(width: AppSpacing.sm),
-          Expanded(
+          const Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,

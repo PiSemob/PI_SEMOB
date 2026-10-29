@@ -90,11 +90,11 @@ class _PainelMarca extends StatelessWidget {
                   style: AppTextStyles.display,
                 ),
                 const SizedBox(height: AppSpacing.md),
-                Text(
+                const Text(
                   'Plataforma unificada de Business Intelligence e IA '
                   'para monitoramento, análise e suporte à decisão da '
                   'operação municipal de São Caetano do Sul.',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 13,
                     height: 1.6,
                     color: AppColors.textSecondary,
@@ -232,9 +232,9 @@ class _AvisoDemo extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         color: AppColors.surface,
-        border: const Border(
+        border: Border(
           left: BorderSide(color: AppColors.accent, width: 3),
         ),
       ),

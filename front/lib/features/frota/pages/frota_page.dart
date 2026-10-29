@@ -133,16 +133,16 @@ class _AreaMapa extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          AppSectionTitle(
+          const AppSectionTitle(
             'GPS ao vivo',
             subtitulo: 'São Caetano do Sul, SP',
             acao: Row(
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
                 _Legenda(cor: AppColors.accent, texto: 'Em rota'),
-                const SizedBox(width: AppSpacing.md),
+                SizedBox(width: AppSpacing.md),
                 _Legenda(cor: AppColors.warning, texto: 'Atenção'),
-                const SizedBox(width: AppSpacing.md),
+                SizedBox(width: AppSpacing.md),
                 _Legenda(cor: AppColors.danger, texto: 'Parado'),
               ],
             ),

@@ -84,8 +84,8 @@ class _ConfiguracoesPageState extends ConsumerState<ConfiguracoesPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              Text('API Key', style: AppTextStyles.label),
-              Text(
+              const Text('API Key', style: AppTextStyles.label),
+              const Text(
                 'Configure para ativar o rastreamento de veículos em tempo real.',
                 style: AppTextStyles.caption,
               ),
@@ -183,13 +183,13 @@ class _SobreAPlataforma extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return _Secao(
+    return const _Secao(
       titulo: 'Sobre a Plataforma',
       child: Row(
         children: <Widget>[
-          const AppLogo(escuro: true, compacto: true),
-          const SizedBox(width: AppSpacing.md),
-          Expanded(
+          AppLogo(escuro: true, compacto: true),
+          SizedBox(width: AppSpacing.md),
+           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
