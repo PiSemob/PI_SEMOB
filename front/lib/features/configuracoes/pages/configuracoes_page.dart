@@ -187,7 +187,7 @@ class _SobreAPlataforma extends StatelessWidget {
       titulo: 'Sobre a Plataforma',
       child: Row(
         children: <Widget>[
-          AppLogo(escuro: true, compacto: true),
+          AppLogo(compacto: true),
           SizedBox(width: AppSpacing.md),
            Expanded(
             child: Column(

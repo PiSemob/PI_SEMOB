@@ -29,8 +29,20 @@ flutter:
 
   assets:
     - assets/logos/
+    - assets/mapas/
+    - assets/dados/
 
   fonts:
+    - family: IBM Plex Sans
+      fonts:
+        - asset: assets/fonts/IBMPlexSans-400.ttf
+          weight: 400
+        - asset: assets/fonts/IBMPlexSans-500.ttf
+          weight: 500
+        - asset: assets/fonts/IBMPlexSans-600.ttf
+          weight: 600
+        - asset: assets/fonts/IBMPlexSans-700.ttf
+          weight: 700
     - family: IBM Plex Mono
       fonts:
         - asset: assets/fonts/IBMPlexMono-400.ttf

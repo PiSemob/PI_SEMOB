@@ -13,34 +13,34 @@ void main() {
     test('Deve alterar o período corretamente', () {
       final container = ProviderContainer();
       final notifier = container.read(filtroPeriodoProvider.notifier);
-      
+
       notifier.selecionar(PeriodoTipo.hoje);
-      
+
       expect(container.read(filtroPeriodoProvider).tipo, PeriodoTipo.hoje);
     });
 
     test('Deve alternar o estado de comparação', () {
       final container = ProviderContainer();
       final notifier = container.read(filtroPeriodoProvider.notifier);
-      
+
       notifier.alternarComparacao();
       expect(container.read(filtroPeriodoProvider).comparar, isTrue);
-      
+
       notifier.alternarComparacao();
       expect(container.read(filtroPeriodoProvider).comparar, isFalse);
     });
   });
 
-  group('FiltroDemandaNotifier Tests', () {
+  group('LinhaSelecionadaNotifier Tests', () {
     test('Deve filtrar por linha e limpar corretamente', () {
       final container = ProviderContainer();
-      final notifier = container.read(filtroDemandaProvider.notifier);
-      
-      notifier.setLinha('L01');
-      expect(container.read(filtroDemandaProvider).linha, 'L01');
-      
-      notifier.setLinha(null);
-      expect(container.read(filtroDemandaProvider).linha, isNull);
+      final notifier = container.read(linhaSelecionadaProvider.notifier);
+
+      notifier.selecionar('01');
+      expect(container.read(linhaSelecionadaProvider), '01');
+
+      notifier.selecionar(null);
+      expect(container.read(linhaSelecionadaProvider), isNull);
     });
   });
 }

@@ -5,6 +5,10 @@ import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/providers.dart';
 import '../../../shared/widgets/app_widgets.dart';
+import '../widgets/layout_acesso.dart';
+
+String? validarEmail(String? v) =>
+    (v == null || !v.contains('@')) ? 'Informe um e-mail válido' : null;
 
 class LoginPage extends ConsumerStatefulWidget {
   const LoginPage({super.key});
@@ -31,231 +35,66 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     context.go('/dashboard');
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: LayoutBuilder(
-        builder: (BuildContext context, BoxConstraints c) {
-          final bool largo = c.maxWidth >= 900;
-
-          final Widget formulario = _Formulario(
-            formKey: _formKey,
-            email: _email,
-            senha: _senha,
-            onEntrar: _entrar,
-            mostrarMarca: !largo,
-          );
-
-          if (!largo) return formulario;
-
-          return Row(
-            children: <Widget>[
-              const Expanded(flex: 2, child: _PainelMarca()),
-              Expanded(flex: 3, child: formulario),
-            ],
-          );
-        },
-      ),
+  void _esqueciSenha() {
+    final String email = _email.text.trim();
+    context.go(
+      Uri(
+        path: '/recuperar-senha',
+        queryParameters:
+            email.isEmpty ? null : <String, String>{'email': email},
+      ).toString(),
     );
   }
-}
-
-class _PainelMarca extends StatelessWidget {
-  const _PainelMarca();
-
-  static const List<String> _recursos = <String>[
-    'Dashboard em tempo real',
-    'IA Generativa',
-    'Relatórios automáticos',
-    'Rastreamento GPS',
-    'Análise preditiva',
-  ];
 
   @override
   Widget build(BuildContext context) {
-    return FundoMarca(
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.xl),
+    return LayoutAcesso(
+      child: Form(
+        key: _formKey,
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisSize: MainAxisSize.min,
           children: <Widget>[
-            const AppLogo(),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                const Text(
-                  'Inteligência para o\ntransporte público',
-                  style: AppTextStyles.display,
-                ),
-                const SizedBox(height: AppSpacing.md),
-                const Text(
-                  'Plataforma unificada de Business Intelligence e IA '
-                  'para monitoramento, análise e suporte à decisão da '
-                  'operação municipal de São Caetano do Sul.',
-                  style: TextStyle(
-                    fontSize: 13,
-                    height: 1.6,
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.lg),
-                Wrap(
-                  spacing: AppSpacing.sm,
-                  runSpacing: AppSpacing.sm,
-                  children: <Widget>[
-                    for (final String r in _recursos) ChipMarca(r),
-                  ],
-                ),
-              ],
+            const CabecalhoAcesso(
+              titulo: 'Entrar no Ferret',
+              texto: 'Use seu e-mail institucional SEMOB-SCS.',
             ),
-            const _CardParceiro(),
+            const SizedBox(height: AppSpacing.xl),
+            AppTextField(
+              label: 'E-mail institucional',
+              controller: _email,
+              hint: 'gestor@semob.gov.br',
+              icone: Icons.mail_outline,
+              keyboardType: TextInputType.emailAddress,
+              validator: validarEmail,
+            ),
+            const SizedBox(height: AppSpacing.md + 4),
+            AppTextField(
+              label: 'Senha',
+              controller: _senha,
+              hint: '••••••••',
+              icone: Icons.lock_outline,
+              obscure: true,
+              onSubmitted: (_) => _entrar(),
+              validator: (String? v) =>
+                  (v == null || v.length < 4) ? 'Mínimo de 4 caracteres' : null,
+            ),
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton(
+                onPressed: _esqueciSenha,
+                child: const Text('Esqueci minha senha'),
+              ),
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            AppButton(label: 'Entrar', onPressed: _entrar),
+            const SizedBox(height: AppSpacing.lg),
+            const AvisoAcesso(
+              titulo: 'Modo demonstração.',
+              texto: 'Qualquer e-mail e senha dão acesso ao painel.',
+            ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class _CardParceiro extends StatelessWidget {
-  const _CardParceiro();
-
-  @override
-  Widget build(BuildContext context) {
-    return const AppCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          Text('PARCEIRO INSTITUCIONAL', style: AppTextStyles.overline),
-          SizedBox(height: AppSpacing.sm),
-          LogoScs(altura: 40),
-          SizedBox(height: AppSpacing.sm),
-          Text(
-            'SEMOB-SCS · Instituto Mauá de Tecnologia',
-            style: AppTextStyles.label,
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _Formulario extends StatelessWidget {
-  const _Formulario({
-    required this.formKey,
-    required this.email,
-    required this.senha,
-    required this.onEntrar,
-    required this.mostrarMarca,
-  });
-
-  final GlobalKey<FormState> formKey;
-  final TextEditingController email;
-  final TextEditingController senha;
-  final VoidCallback onEntrar;
-  final bool mostrarMarca;
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.all(AppSpacing.xl),
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 390),
-          child: Form(
-            key: formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                if (mostrarMarca) ...<Widget>[
-                  const Align(
-                    alignment: Alignment.centerLeft,
-                    child: AppLogo(escuro: true),
-                  ),
-                  const SizedBox(height: AppSpacing.xl),
-                ],
-                const Text(
-                  'Acesso à plataforma',
-                  style: AppTextStyles.title,
-                ),
-                const SizedBox(height: AppSpacing.xs),
-                const Text(
-                  'Use seu e-mail institucional SEMOB-SCS para entrar.',
-                  style: AppTextStyles.caption,
-                ),
-                const SizedBox(height: AppSpacing.lg),
-                AppTextField(
-                  label: 'E-mail institucional',
-                  controller: email,
-                  hint: 'gestor@semob.gov.br',
-                  keyboardType: TextInputType.emailAddress,
-                  validator: (String? v) => (v == null || !v.contains('@'))
-                      ? 'Informe um e-mail válido'
-                      : null,
-                ),
-                const SizedBox(height: AppSpacing.md),
-                AppTextField(
-                  label: 'Senha',
-                  controller: senha,
-                  hint: '••••••••',
-                  obscure: true,
-                  onSubmitted: (_) => onEntrar(),
-                  validator: (String? v) => (v == null || v.length < 4)
-                      ? 'Mínimo de 4 caracteres'
-                      : null,
-                ),
-                const SizedBox(height: AppSpacing.lg),
-                AppButton(label: 'Entrar', onPressed: onEntrar),
-                const SizedBox(height: AppSpacing.sm),
-                TextButton(
-                  onPressed: () {},
-                  child: const Text('Recuperar senha'),
-                ),
-                const SizedBox(height: AppSpacing.md),
-                const _AvisoDemo(),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _AvisoDemo extends StatelessWidget {
-  const _AvisoDemo();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.md),
-      decoration: const BoxDecoration(
-        color: AppColors.surface,
-        border: Border(
-          left: BorderSide(color: AppColors.accent, width: 3),
-        ),
-      ),
-      child: const Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          Text(
-            'Modo demonstração',
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              color: AppColors.primary,
-            ),
-          ),
-          SizedBox(height: AppSpacing.xs),
-          Text(
-            'Use qualquer e-mail e senha para acessar o painel demo.',
-            style: AppTextStyles.caption,
-          ),
-        ],
       ),
     );
   }

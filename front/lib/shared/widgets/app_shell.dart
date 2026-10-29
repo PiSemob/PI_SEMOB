@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../core/theme/app_theme.dart';
+import '../painel.dart';
 import '../providers.dart';
 import 'app_widgets.dart';
 
@@ -30,101 +31,60 @@ class NavItem {
 const List<NavItem> navItems = <NavItem>[
   NavItem(
     rota: '/dashboard',
-    label: 'Dashboard',
+    label: 'Visão geral',
     icone: Icons.space_dashboard_outlined,
-    grupo: 'OPERAÇÃO',
+    grupo: 'PAINÉIS',
     titulo: 'Dashboard Principal',
     subtitulo: 'Visão geral da operação',
   ),
   NavItem(
-    rota: '/demanda',
-    label: 'Demanda',
-    icone: Icons.groups_outlined,
-    grupo: 'OPERAÇÃO',
-    titulo: 'Módulo Demanda',
-    subtitulo: 'Análise de passageiros',
+    rota: '/operacao',
+    label: 'Operação',
+    icone: Icons.directions_bus_outlined,
+    grupo: 'PAINÉIS',
+    titulo: 'Operação',
+    subtitulo: 'Demanda, operação da frota e quilometragem',
   ),
   NavItem(
     rota: '/receita',
-    label: 'Receita',
-    icone: Icons.attach_money,
-    grupo: 'FINANCEIRO',
-    titulo: 'Módulo Receita',
-    subtitulo: 'Arrecadação e formas de pagamento',
+    label: 'Financeiro',
+    icone: Icons.payments_outlined,
+    grupo: 'PAINÉIS',
+    titulo: 'Financeiro',
+    subtitulo: 'Receita e créditos em circulação',
   ),
   NavItem(
-    rota: '/creditos',
-    label: 'Créditos em Circulação',
-    icone: Icons.credit_card_outlined,
-    grupo: 'FINANCEIRO',
-    titulo: 'Créditos em Circulação',
-    subtitulo: 'Venda e utilização de créditos',
-  ),
-  NavItem(
-    rota: '/frota',
-    label: 'Operação da Frota',
-    icone: Icons.directions_bus_outlined,
-    grupo: 'FROTA',
-    titulo: 'Operação da Frota',
-    subtitulo: 'Linhas, veículos e situação operacional',
-  ),
-  NavItem(
-    rota: '/quilometragem',
-    label: 'Quilometragem',
-    icone: Icons.monitor_heart_outlined,
-    grupo: 'FROTA',
-    titulo: 'Quilometragem',
-    subtitulo: 'Produção quilométrica da frota',
-  ),
-  NavItem(
-    rota: '/documentos',
-    label: 'Central de Documentos',
+    rota: '/dados',
+    label: 'Dados e relatórios',
     icone: Icons.description_outlined,
-    grupo: 'DADOS & IA',
-    titulo: 'Central de Documentos',
-    subtitulo: 'Recebimento e processamento de PDFs',
+    grupo: 'PAINÉIS',
+    titulo: 'Dados e Relatórios',
+    subtitulo: 'Documentos, integrações e relatórios',
   ),
   NavItem(
     rota: '/assistente',
     label: 'Ferret Jr',
     icone: Icons.auto_awesome_outlined,
-    grupo: 'DADOS & IA',
+    grupo: 'ASSISTENTE',
     titulo: 'Ferret Jr',
     subtitulo: 'Assistente inteligente da operação',
     badge: 'IA',
   ),
-  NavItem(
-    rota: '/relatorios',
-    label: 'Relatórios',
-    icone: Icons.insert_chart_outlined,
-    grupo: 'DADOS & IA',
-    titulo: 'Relatórios',
-    subtitulo: 'Geração e exportação de relatórios',
-  ),
-  NavItem(
-    rota: '/integracoes',
-    label: 'Integrações de Dados',
-    icone: Icons.hub_outlined,
-    grupo: 'ADMINISTRAÇÃO',
-    titulo: 'Integrações de Dados',
-    subtitulo: 'Fontes de dados e status das conexões',
-  ),
-  NavItem(
-    rota: '/configuracoes',
-    label: 'Configurações',
-    icone: Icons.settings_outlined,
-    grupo: 'ADMINISTRAÇÃO',
-    titulo: 'Configurações',
-    subtitulo: 'Parâmetros do sistema',
-  ),
 ];
+
+const NavItem itemConfiguracoes = NavItem(
+  rota: '/configuracoes',
+  label: 'Configurações',
+  icone: Icons.settings_outlined,
+  grupo: 'ADMINISTRAÇÃO',
+  titulo: 'Configurações',
+  subtitulo: 'Parâmetros do sistema',
+);
 
 const double _larguraAberta = 264;
 const double _larguraEncolhida = 64;
 const Duration _duracaoMenu = Duration(milliseconds: 160);
 
-/// Verdadeiro quando a barra lateral está fixada aberta. Falso quando está
-/// encolhida (só os ícones) e abre apenas enquanto o mouse está em cima.
 final StateProvider<bool> sidebarFixaProvider =
     StateProvider<bool>((ref) => true);
 
@@ -134,45 +94,43 @@ class AppShell extends ConsumerWidget {
   final Widget child;
   final String rotaAtual;
 
-  int get _indice {
-    final int i =
-        navItems.indexWhere((NavItem n) => rotaAtual.startsWith(n.rota));
-    return i < 0 ? 0 : i;
-  }
+  int get _indice =>
+      navItems.indexWhere((NavItem n) => rotaAtual.startsWith(n.rota));
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final bool largo = MediaQuery.sizeOf(context).width >= 900;
-    final NavItem atual = navItems[_indice];
+    final NavItem atual = rotaAtual.startsWith(itemConfiguracoes.rota)
+        ? itemConfiguracoes
+        : navItems[_indice < 0 ? 0 : _indice];
 
     if (largo) {
       final bool fixa = ref.watch(sidebarFixaProvider);
       return Scaffold(
-        // A barra fica por cima do conteúdo. Encolhida, ela ocupa só a faixa
-        // dos ícones; ao abrir com o mouse, cobre parte da tela sem empurrar
-        // os gráficos.
-        body: Stack(
-          children: <Widget>[
-            AnimatedPadding(
-              duration: _duracaoMenu,
-              curve: Curves.easeOut,
-              padding: EdgeInsets.only(
-                left: fixa ? _larguraAberta : _larguraEncolhida,
+        body: SafeArea(
+          child: Stack(
+            children: <Widget>[
+              AnimatedPadding(
+                duration: _duracaoMenu,
+                curve: Curves.easeOut,
+                padding: EdgeInsets.only(
+                  left: fixa ? _larguraAberta : _larguraEncolhida,
+                ),
+                child: Column(
+                  children: <Widget>[
+                    _Header(item: atual),
+                    Expanded(child: child),
+                  ],
+                ),
               ),
-              child: Column(
-                children: <Widget>[
-                  _Header(item: atual),
-                  Expanded(child: child),
-                ],
+              Positioned(
+                left: 0,
+                top: 0,
+                bottom: 0,
+                child: _Sidebar(indice: _indice),
               ),
-            ),
-            Positioned(
-              left: 0,
-              top: 0,
-              bottom: 0,
-              child: _Sidebar(indice: _indice),
-            ),
-          ],
+            ],
+          ),
         ),
       );
     }
@@ -187,7 +145,10 @@ class AppShell extends ConsumerWidget {
             Text(atual.subtitulo, style: AppTextStyles.caption),
           ],
         ),
-        actions: const <Widget>[_BadgeAoVivo(), SizedBox(width: AppSpacing.md)],
+        actions: const <Widget>[
+          _PeriodoDosDados(),
+          SizedBox(width: AppSpacing.md)
+        ],
       ),
       drawer: Drawer(
         backgroundColor: AppColors.sidebar,
@@ -216,16 +177,26 @@ class _SidebarState extends ConsumerState<_Sidebar> {
     context.go(item.rota);
   }
 
+  Widget _botaoConfiguracoes() => IconButton(
+        tooltip: itemConfiguracoes.label,
+        visualDensity: VisualDensity.compact,
+        icon: const Icon(Icons.settings_outlined,
+            size: 18, color: AppColors.sidebarText),
+        onPressed: () => _irPara(itemConfiguracoes),
+      );
+
   void _alternarFixa(bool fixa) {
     ref.read(sidebarFixaProvider.notifier).state = !fixa;
-    // Ao encolher, fecha na hora, mesmo com o mouse ainda sobre o botão.
     if (fixa) setState(() => _mouseEmCima = false);
   }
 
   @override
   Widget build(BuildContext context) {
     if (widget.dentroDoDrawer) {
-      return ColoredBox(color: AppColors.sidebar, child: _aberta(fixa: null));
+      return ColoredBox(
+        color: AppColors.sidebar,
+        child: SafeArea(child: _aberta(fixa: null)),
+      );
     }
 
     final bool fixa = ref.watch(sidebarFixaProvider);
@@ -243,19 +214,16 @@ class _SidebarState extends ConsumerState<_Sidebar> {
         decoration: BoxDecoration(
           color: AppColors.sidebar,
           border: const Border(right: BorderSide(color: AppColors.border)),
-          // Sombra só quando a barra está aberta por cima do conteúdo.
           boxShadow: aberta && !fixa
               ? <BoxShadow>[
                   BoxShadow(
-                    color: AppColors.ink.withValues(alpha: 0.12),
-                    blurRadius: 18,
-                    offset: const Offset(4, 0),
+                    color: AppColors.ink.withValues(alpha: 0.10),
+                    blurRadius: 12,
+                    offset: const Offset(2, 0),
                   ),
                 ]
               : null,
         ),
-        // O conteúdo é desenhado já na largura final e a barra o recorta
-        // enquanto anima. Sem isso, os textos quebrariam durante a animação.
         child: OverflowBox(
           alignment: Alignment.centerLeft,
           minWidth: largura,
@@ -266,15 +234,14 @@ class _SidebarState extends ConsumerState<_Sidebar> {
     );
   }
 
-  /// Só o logo do Ferret e os ícones.
   Widget _encolhida() {
     return Column(
       children: <Widget>[
-        const Padding(
-          padding: EdgeInsets.symmetric(vertical: AppSpacing.md),
-          child: AppLogo(compacto: true),
+        const SizedBox(
+          height: 64,
+          child: Center(child: AppLogo(compacto: true)),
         ),
-        const Hachura(),
+        const Divider(height: 1),
         Expanded(
           child: ListView(
             padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
@@ -288,12 +255,15 @@ class _SidebarState extends ConsumerState<_Sidebar> {
             ],
           ),
         ),
+        const Divider(height: 1),
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
+          child: _botaoConfiguracoes(),
+        ),
       ],
     );
   }
 
-  /// Barra completa. `fixa` nulo significa "dentro do menu do celular", onde
-  /// não há botão de encolher.
   Widget _aberta({required bool? fixa}) {
     final String? usuario = ref.watch(sessaoProvider);
 
@@ -305,15 +275,14 @@ class _SidebarState extends ConsumerState<_Sidebar> {
         grupoAnterior = n.grupo;
         itens.add(
           Padding(
-            padding: const EdgeInsets.fromLTRB(
-              AppSpacing.md,
-              AppSpacing.md,
-              AppSpacing.md,
-              AppSpacing.sm,
-            ),
+            padding: const EdgeInsets.fromLTRB(20, 18, AppSpacing.md, 6),
             child: Text(
-              '[${n.grupo}]',
-              style: AppTextStyles.overline.copyWith(color: AppColors.textMuted),
+              n.grupo,
+              style: AppTextStyles.overline.copyWith(
+                fontSize: 10.5,
+                letterSpacing: 0.8,
+                color: AppColors.textMuted,
+              ),
             ),
           ),
         );
@@ -330,86 +299,96 @@ class _SidebarState extends ConsumerState<_Sidebar> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
-        Padding(
-          padding: const EdgeInsets.fromLTRB(
-            AppSpacing.md,
-            AppSpacing.md,
-            AppSpacing.sm,
-            AppSpacing.md,
-          ),
-          child: Row(
-            children: <Widget>[
-              const Expanded(
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: AppLogo(),
-                ),
-              ),
-              if (fixa != null)
-                IconButton(
-                  tooltip: fixa ? 'Encolher menu' : 'Fixar menu aberto',
-                  visualDensity: VisualDensity.compact,
-                  icon: Icon(
-                    fixa
-                        ? Icons.keyboard_double_arrow_left
-                        : Icons.push_pin_outlined,
-                    size: 18,
-                    color: AppColors.sidebarText,
+        SizedBox(
+          height: 64,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.md + 2,
+              0,
+              AppSpacing.sm,
+              0,
+            ),
+            child: Row(
+              children: <Widget>[
+                const Expanded(
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: AppLogo(),
                   ),
-                  onPressed: () => _alternarFixa(fixa),
                 ),
-            ],
+                if (fixa != null)
+                  IconButton(
+                    tooltip: fixa ? 'Encolher menu' : 'Fixar menu aberto',
+                    visualDensity: VisualDensity.compact,
+                    icon: Icon(
+                      fixa
+                          ? Icons.keyboard_double_arrow_left
+                          : Icons.push_pin_outlined,
+                      size: 18,
+                      color: AppColors.sidebarText,
+                    ),
+                    onPressed: () => _alternarFixa(fixa),
+                  ),
+              ],
+            ),
           ),
         ),
-        const Hachura(),
+        const Divider(height: 1),
         Expanded(
           child: ListView(
             padding: const EdgeInsets.only(bottom: AppSpacing.md),
             children: itens,
           ),
         ),
-        const Hachura(),
+        const Divider(height: 1),
         const Padding(
           padding: EdgeInsets.fromLTRB(
+            AppSpacing.md + 2,
             AppSpacing.md,
             AppSpacing.md,
             AppSpacing.md,
-            AppSpacing.sm,
           ),
-          child: LogoScs(),
+          child: LogoScs(altura: 30),
         ),
         const Divider(height: 1),
         Padding(
-          padding: const EdgeInsets.all(AppSpacing.md),
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.md + 2,
+            12,
+            AppSpacing.sm,
+            12,
+          ),
           child: Row(
             children: <Widget>[
               Container(
-                height: 34,
-                width: 34,
+                height: 32,
+                width: 32,
                 alignment: Alignment.center,
-                color: AppColors.ink,
+                decoration: BoxDecoration(
+                  color: AppColors.surface,
+                  borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+                  border: Border.all(color: AppColors.borderStrong),
+                ),
                 child: const Text(
                   'GS',
                   style: TextStyle(
-                    fontSize: 11,
+                    fontSize: 11.5,
                     fontWeight: FontWeight.w600,
-                    letterSpacing: 0.5,
-                    color: Colors.white,
+                    color: AppColors.primary,
                   ),
                 ),
               ),
-              const SizedBox(width: AppSpacing.sm),
+              const SizedBox(width: 10),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: <Widget>[
                     const Text(
-                      'GESTOR SEMOB',
+                      'Gestor SEMOB',
                       style: TextStyle(
-                        fontSize: 11.5,
+                        fontSize: 13,
                         fontWeight: FontWeight.w600,
-                        letterSpacing: 0.6,
                         color: AppColors.textPrimary,
                       ),
                     ),
@@ -417,12 +396,13 @@ class _SidebarState extends ConsumerState<_Sidebar> {
                       usuario ?? 'gestor@semob.gov.br',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: AppTextStyles.caption
-                          .copyWith(color: AppColors.sidebarText),
+                      style: AppTextStyles.caption.copyWith(
+                          fontSize: 11.5, color: AppColors.sidebarText),
                     ),
                   ],
                 ),
               ),
+              _botaoConfiguracoes(),
               const _BotaoSair(),
             ],
           ),
@@ -432,7 +412,6 @@ class _SidebarState extends ConsumerState<_Sidebar> {
   }
 }
 
-/// Item do menu encolhido: só o ícone, com a mesma barra laranja de seleção.
 class _ItemNavIcone extends StatelessWidget {
   const _ItemNavIcone({
     required this.item,
@@ -446,25 +425,25 @@ class _ItemNavIcone extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: selecionado ? AppColors.sidebarActive : Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        child: Container(
-          height: 40,
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            border: Border(
-              left: BorderSide(
-                width: 3,
-                color: selecionado ? AppColors.accent : Colors.transparent,
+    return Tooltip(
+      message: item.label,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 1),
+        child: Material(
+          color: selecionado ? AppColors.sidebarActive : Colors.transparent,
+          borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+          child: InkWell(
+            onTap: onTap,
+            borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+            hoverColor: AppColors.sidebarHover,
+            child: SizedBox(
+              height: 38,
+              child: Icon(
+                item.icone,
+                size: 19,
+                color: selecionado ? AppColors.primary : AppColors.sidebarText,
               ),
             ),
-          ),
-          child: Icon(
-            item.icone,
-            size: 18,
-            color: selecionado ? AppColors.textPrimary : AppColors.sidebarText,
           ),
         ),
       ),
@@ -485,62 +464,55 @@ class _ItemNav extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Color cor =
-        selecionado ? AppColors.textPrimary : AppColors.sidebarText;
+    final Color cor = selecionado ? AppColors.primary : AppColors.sidebarText;
 
-    return Material(
-      color: selecionado ? AppColors.sidebarActive : Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        overlayColor: WidgetStateProperty.resolveWith<Color?>(
-          (Set<WidgetState> states) => states.isEmpty
-              ? null
-              : (selecionado ? AppColors.sidebarActive : AppColors.sidebarHover),
-        ),
-        child: Container(
-          // A barra laranja à esquerda marca o item atual.
-          decoration: BoxDecoration(
-            border: Border(
-              left: BorderSide(
-                width: 3,
-                color: selecionado ? AppColors.accent : Colors.transparent,
-              ),
-            ),
-          ),
-          padding: const EdgeInsets.fromLTRB(13, 10, AppSpacing.md, 10),
-          child: Row(
-            children: <Widget>[
-              Icon(item.icone, size: 16, color: cor),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  item.label.toUpperCase(),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 11.5,
-                    letterSpacing: 0.8,
-                    fontWeight: selecionado ? FontWeight.w600 : FontWeight.w400,
-                    color: cor,
-                  ),
-                ),
-              ),
-              if (item.badge != null)
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                  color: AppColors.accent,
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 1),
+      child: Material(
+        color: selecionado ? AppColors.sidebarActive : Colors.transparent,
+        borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+          hoverColor: AppColors.sidebarHover,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
+            child: Row(
+              children: <Widget>[
+                Icon(item.icone, size: 18, color: cor),
+                const SizedBox(width: 12),
+                Expanded(
                   child: Text(
-                    item.badge!,
-                    style: const TextStyle(
-                      fontSize: 9.5,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 0.6,
-                      color: Colors.white,
+                    item.label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 13.5,
+                      fontWeight:
+                          selecionado ? FontWeight.w600 : FontWeight.w400,
+                      color: selecionado ? AppColors.textPrimary : cor,
                     ),
                   ),
                 ),
-            ],
+                if (item.badge != null)
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(3),
+                      border: Border.all(color: AppColors.primary),
+                    ),
+                    child: Text(
+                      item.badge!,
+                      style: const TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.primary,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
           ),
         ),
       ),
@@ -553,10 +525,11 @@ class _Header extends StatelessWidget {
 
   final NavItem item;
 
-  /// 'DADOS & IA' vira 'Dados & ia': só a primeira letra fica maiúscula.
-  static String _capitalizar(String texto) => texto.isEmpty
-      ? texto
-      : texto[0].toUpperCase() + texto.substring(1).toLowerCase();
+  static String _capitalizar(String texto) => texto
+      .split(' ')
+      .map(
+          (String p) => p.length <= 2 ? p : p[0] + p.substring(1).toLowerCase())
+      .join(' ');
 
   @override
   Widget build(BuildContext context) {
@@ -571,47 +544,42 @@ class _Header extends StatelessWidget {
       ),
       child: Row(
         children: <Widget>[
-          // Caminho no estilo "Ferret/Operação/Dashboard", como em um terminal.
-          Text(
-            'Ferret/${_capitalizar(item.grupo)}/',
-            style: AppTextStyles.caption.copyWith(color: AppColors.textMuted),
-          ),
-          Text(item.titulo, style: AppTextStyles.title),
-          const SizedBox(width: AppSpacing.md),
-          Container(width: 1, height: 18, color: AppColors.border),
-          const SizedBox(width: AppSpacing.md),
           Expanded(
-            child: Text(
-              item.subtitulo,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: AppTextStyles.caption,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Text(
+                  _capitalizar(item.grupo),
+                  style: AppTextStyles.caption.copyWith(
+                    fontSize: 11.5,
+                    color: AppColors.textMuted,
+                  ),
+                ),
+                Text(
+                  item.titulo,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTextStyles.title,
+                ),
+              ],
             ),
           ),
-          const _BadgeAoVivo(),
-          if (!compacto) ...<Widget>[
-            const SizedBox(width: AppSpacing.md),
-            Text(
-              DateFormat('dd/MM/yyyy  HH:mm').format(DateTime.now()),
-              style: AppTextStyles.caption,
-            ),
-          ],
+          if (!compacto) const _PeriodoDosDados(),
           const SizedBox(width: AppSpacing.sm),
           IconButton(
             tooltip: 'Notificações',
             icon: const Icon(Icons.notifications_none,
-                size: 20, color: AppColors.textSecondary),
+                size: 21, color: AppColors.textSecondary),
             onPressed: () {},
           ),
-          const SizedBox(width: AppSpacing.sm),
-          FilledButton.icon(
-            style: FilledButton.styleFrom(
-              minimumSize: const Size(0, 40),
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-            ),
-            onPressed: () => context.go('/relatorios'),
-            icon: const Icon(Icons.file_download_outlined, size: 18),
-            label: const Text('Exportar'),
+          const SizedBox(width: AppSpacing.xs),
+          AppButton(
+            label: 'Exportar',
+            compacto: true,
+            secundario: true,
+            icone: Icons.file_download_outlined,
+            onPressed: () => context.go('/dados?aba=relatorios'),
           ),
         ],
       ),
@@ -619,25 +587,26 @@ class _Header extends StatelessWidget {
   }
 }
 
-class _BadgeAoVivo extends StatelessWidget {
-  const _BadgeAoVivo();
+class _PeriodoDosDados extends ConsumerWidget {
+  const _PeriodoDosDados();
 
   @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: AppColors.accentSoft,
-        border: Border.all(color: AppColors.accent),
-      ),
+  Widget build(BuildContext context, WidgetRef ref) {
+    final Painel? painel = ref.watch(painelProvider).valueOrNull;
+    if (painel == null) return const SizedBox.shrink();
+    final DateFormat dia = DateFormat('dd/MM/yyyy');
+    return Tooltip(
+      message:
+          'Relatórios do Smart Report de ${dia.format(painel.inicio)} a ${dia.format(painel.fim)}',
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
-          Container(height: 6, width: 6, color: AppColors.accent),
+          const Icon(Icons.event_available_outlined,
+              size: 16, color: AppColors.textSecondary),
           const SizedBox(width: 6),
           Text(
-            'AO VIVO',
-            style: AppTextStyles.overline.copyWith(color: AppColors.accent),
+            'Dados até ${dia.format(painel.fim)}',
+            style: AppTextStyles.caption.copyWith(fontWeight: FontWeight.w600),
           ),
         ],
       ),

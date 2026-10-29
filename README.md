@@ -40,7 +40,7 @@ API FastAPI  ──────────────▶  app Flutter (front/)
 │   │   │   └── planejamento/ Prophet, SARIMAX e a escolha entre eles
 │   │   ├── api/              rotas da API (em construção)
 │   │   └── agente/           assistente Ferret Jr (em construção)
-│   ├── scripts/              criar_tabelas, ingerir, treinar
+│   ├── scripts/              criar_tabelas, ingerir, treinar, exportar_painel (dados do app)
 │   └── tests/                suíte de testes (ver "Testes")
 ├── front/                    app Flutter (ver front/README.md)
 ├── dados/brutos/             relatórios HTML do Smart Report
@@ -57,6 +57,7 @@ Os relatórios ficam em `dados/brutos/<Mês>_<ano>/<Mensal|Quinzenal>/`. O mês 
 - Python 3.11 ou mais novo
 - Docker Desktop
 - Flutter 3.6 ou mais novo (só para o app)
+- Android Studio (só para gerar o app de Android)
 
 ### 1. Configuração
 
@@ -113,7 +114,15 @@ flutter pub get
 flutter run -d chrome
 ```
 
-Por enquanto o app usa os dados de exemplo de `front/lib/shared/dados_exemplo.dart`. A integração com a API é o próximo passo.
+O app mostra os dados reais de `dados/brutos`, a partir de `front/assets/dados/painel.json`. Quando entrarem relatórios novos, gere o arquivo de novo de dentro de `back/` (usa o mesmo ETL, sem Docker):
+
+```powershell
+python -m scripts.exportar_painel
+```
+
+A integração com a API é o próximo passo.
+
+O mesmo código também gera o app de celular (Android e iOS). Os passos estão em [front/README.md](front/README.md#app-no-celular).
 
 ## Banco de dados
 
