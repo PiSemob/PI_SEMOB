@@ -2,16 +2,24 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'formatters.dart';
+import 'painel.dart';
 
-enum PeriodoTipo { hoje, ultimos7, ultimos15, ultimos30, mesAtual, personalizado }
+enum PeriodoTipo {
+  hoje,
+  ultimos7,
+  ultimos15,
+  ultimos30,
+  mesAtual,
+  personalizado
+}
 
 extension PeriodoTipoLabel on PeriodoTipo {
   String get label => switch (this) {
-        PeriodoTipo.hoje => 'Hoje',
+        PeriodoTipo.hoje => 'Último dia',
         PeriodoTipo.ultimos7 => 'Últimos 7d',
         PeriodoTipo.ultimos15 => 'Últimos 15d',
         PeriodoTipo.ultimos30 => 'Últimos 30d',
-        PeriodoTipo.mesAtual => 'Mês Atual',
+        PeriodoTipo.mesAtual => 'Último mês',
         PeriodoTipo.personalizado => 'Personalizado',
       };
 }
@@ -25,8 +33,12 @@ class FiltroPeriodo {
     this.comparar = false,
   });
 
-  factory FiltroPeriodo.deTipo(PeriodoTipo tipo, {bool comparar = false}) {
-    final DateTime hoje = DateUtils.dateOnly(DateTime.now());
+  factory FiltroPeriodo.deTipo(
+    PeriodoTipo tipo, {
+    bool comparar = false,
+    DateTime? referencia,
+  }) {
+    final DateTime hoje = DateUtils.dateOnly(referencia ?? DateTime.now());
     final DateTime inicio = switch (tipo) {
       PeriodoTipo.hoje => hoje,
       PeriodoTipo.ultimos7 => hoje.subtract(const Duration(days: 6)),
@@ -64,11 +76,18 @@ class FiltroPeriodo {
 }
 
 class FiltroPeriodoNotifier extends Notifier<FiltroPeriodo> {
+  DateTime? get _referencia => ref.watch(painelProvider).valueOrNull?.fim;
+
   @override
-  FiltroPeriodo build() => FiltroPeriodo.deTipo(PeriodoTipo.ultimos30);
+  FiltroPeriodo build() =>
+      FiltroPeriodo.deTipo(PeriodoTipo.ultimos30, referencia: _referencia);
 
   void selecionar(PeriodoTipo tipo) {
-    state = FiltroPeriodo.deTipo(tipo, comparar: state.comparar);
+    state = FiltroPeriodo.deTipo(
+      tipo,
+      comparar: state.comparar,
+      referencia: ref.read(painelProvider).valueOrNull?.fim,
+    );
   }
 
   void definirIntervalo(DateTimeRange intervalo) {
@@ -79,46 +98,26 @@ class FiltroPeriodoNotifier extends Notifier<FiltroPeriodo> {
     );
   }
 
-  void alternarComparacao() => state = state.copyWith(comparar: !state.comparar);
+  void alternarComparacao() =>
+      state = state.copyWith(comparar: !state.comparar);
 }
 
-final NotifierProvider<FiltroPeriodoNotifier, FiltroPeriodo> filtroPeriodoProvider =
-    NotifierProvider<FiltroPeriodoNotifier, FiltroPeriodo>(FiltroPeriodoNotifier.new);
+final NotifierProvider<FiltroPeriodoNotifier, FiltroPeriodo>
+    filtroPeriodoProvider =
+    NotifierProvider<FiltroPeriodoNotifier, FiltroPeriodo>(
+        FiltroPeriodoNotifier.new);
 
-
-@immutable
-class FiltroDemanda {
-  const FiltroDemanda({this.linha, this.empresa});
-
-  final String? linha;
-  final String? empresa;
-
-  FiltroDemanda copyWith({
-    String? linha,
-    String? empresa,
-    bool limparLinha = false,
-    bool limparEmpresa = false,
-  }) {
-    return FiltroDemanda(
-      linha: limparLinha ? null : (linha ?? this.linha),
-      empresa: limparEmpresa ? null : (empresa ?? this.empresa),
-    );
-  }
-}
-
-class FiltroDemandaNotifier extends Notifier<FiltroDemanda> {
+class LinhaSelecionadaNotifier extends Notifier<String?> {
   @override
-  FiltroDemanda build() => const FiltroDemanda();
+  String? build() => null;
 
-  void setLinha(String? linha) =>
-      state = state.copyWith(linha: linha, limparLinha: linha == null);
-
-  void setEmpresa(String? empresa) =>
-      state = state.copyWith(empresa: empresa, limparEmpresa: empresa == null);
+  void selecionar(String? linha) => state = linha;
 }
 
-final NotifierProvider<FiltroDemandaNotifier, FiltroDemanda> filtroDemandaProvider =
-    NotifierProvider<FiltroDemandaNotifier, FiltroDemanda>(FiltroDemandaNotifier.new);
+final NotifierProvider<LinhaSelecionadaNotifier, String?>
+    linhaSelecionadaProvider =
+    NotifierProvider<LinhaSelecionadaNotifier, String?>(
+        LinhaSelecionadaNotifier.new);
 
 class SessaoNotifier extends Notifier<String?> {
   @override
@@ -132,7 +131,6 @@ class SessaoNotifier extends Notifier<String?> {
 final NotifierProvider<SessaoNotifier, String?> sessaoProvider =
     NotifierProvider<SessaoNotifier, String?>(SessaoNotifier.new);
 
-
 @immutable
 class Mensagem {
   const Mensagem({required this.texto, required this.doUsuario});
@@ -143,7 +141,8 @@ class Mensagem {
 
 @immutable
 class Conversa {
-  const Conversa({required this.id, required this.titulo, required this.mensagens});
+  const Conversa(
+      {required this.id, required this.titulo, required this.mensagens});
 
   final String id;
   final String titulo;
@@ -158,26 +157,31 @@ class Conversa {
 
 @immutable
 class EstadoAssistente {
-  const EstadoAssistente({required this.conversas, required this.selecionadaId});
+  const EstadoAssistente(
+      {required this.conversas, required this.selecionadaId});
 
   final List<Conversa> conversas;
   final String selecionadaId;
 
-  Conversa get atual => conversas.firstWhere((Conversa c) => c.id == selecionadaId);
+  Conversa get atual =>
+      conversas.firstWhere((Conversa c) => c.id == selecionadaId);
 }
 
 class AssistenteNotifier extends Notifier<EstadoAssistente> {
   @override
   EstadoAssistente build() {
-    const Conversa inicial = Conversa(id: '1', titulo: 'Nova conversa', mensagens: <Mensagem>[]);
-    return const EstadoAssistente(conversas: <Conversa>[inicial], selecionadaId: '1');
+    const Conversa inicial =
+        Conversa(id: '1', titulo: 'Nova conversa', mensagens: <Mensagem>[]);
+    return const EstadoAssistente(
+        conversas: <Conversa>[inicial], selecionadaId: '1');
   }
 
   void novaConversa() {
     final String id = DateTime.now().millisecondsSinceEpoch.toString();
     state = EstadoAssistente(
       conversas: <Conversa>[
-        Conversa(id: id, titulo: 'Nova conversa', mensagens: const <Mensagem>[]),
+        Conversa(
+            id: id, titulo: 'Nova conversa', mensagens: const <Mensagem>[]),
         ...state.conversas,
       ],
       selecionadaId: id,
@@ -217,5 +221,6 @@ class AssistenteNotifier extends Notifier<EstadoAssistente> {
   }
 }
 
-final NotifierProvider<AssistenteNotifier, EstadoAssistente> assistenteProvider =
-    NotifierProvider<AssistenteNotifier, EstadoAssistente>(AssistenteNotifier.new);
+final NotifierProvider<AssistenteNotifier, EstadoAssistente>
+    assistenteProvider = NotifierProvider<AssistenteNotifier, EstadoAssistente>(
+        AssistenteNotifier.new);

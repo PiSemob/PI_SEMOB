@@ -47,8 +47,7 @@ Widget _rotuloEixoX(List<PontoSerie> serie, double value, TitleMeta meta) {
   if (value != value.roundToDouble()) return const SizedBox.shrink();
   final int i = value.round();
   if (i < 0 || i >= serie.length) return const SizedBox.shrink();
-  // Com muitos pontos, mostra só um rótulo a cada `passo`, para não sobrepor.
-  final int passo = (serie.length / 6).ceil();
+  final int passo = serie.length <= 8 ? 1 : (serie.length / 6).ceil();
   if (i % passo != 0) return const SizedBox.shrink();
   return SideTitleWidget(
     axisSide: meta.axisSide,
@@ -56,23 +55,15 @@ Widget _rotuloEixoX(List<PontoSerie> serie, double value, TitleMeta meta) {
   );
 }
 
-Widget _rotuloEixoY(
-  double value,
-  TitleMeta meta, [
-  String Function(num) formatar = fmtCompacto,
-]) {
+Widget _rotuloEixoY(double value, TitleMeta meta) {
   if (value == meta.max) return const SizedBox.shrink();
   return SideTitleWidget(
     axisSide: meta.axisSide,
-    child: Text(formatar(value), style: AppTextStyles.caption),
+    child: Text(fmtCompacto(value), style: AppTextStyles.caption),
   );
 }
 
-FlTitlesData _titulos(
-  List<PontoSerie> serie, {
-  String Function(num) formatarEixo = fmtCompacto,
-}) =>
-    FlTitlesData(
+FlTitlesData _titulos(List<PontoSerie> serie) => FlTitlesData(
       topTitles: const AxisTitles(),
       rightTitles: const AxisTitles(),
       bottomTitles: AxisTitles(
@@ -83,11 +74,11 @@ FlTitlesData _titulos(
           getTitlesWidget: (double v, TitleMeta m) => _rotuloEixoX(serie, v, m),
         ),
       ),
-      leftTitles: AxisTitles(
+      leftTitles: const AxisTitles(
         sideTitles: SideTitles(
           showTitles: true,
           reservedSize: 52,
-          getTitlesWidget: (double v, TitleMeta m) => _rotuloEixoY(v, m, formatarEixo),
+          getTitlesWidget: _rotuloEixoY,
         ),
       ),
     );
@@ -104,11 +95,17 @@ double _passoRedondo(double bruto) {
   return potencia * 10;
 }
 
+TextStyle get _estiloTooltip =>
+    AppTextStyles.caption.copyWith(color: Colors.white);
+
+String _itemTooltip(String? nome, String valor) =>
+    nome == null ? valor : '$nome: $valor';
+
 FlGridData get _grade => FlGridData(
       show: true,
       drawVerticalLine: false,
-      getDrawingHorizontalLine: (double _) =>
-          const FlLine(color: AppColors.border, strokeWidth: 1, dashArray: <int>[2, 4]),
+      getDrawingHorizontalLine: (double _) => const FlLine(
+          color: AppColors.border, strokeWidth: 1, dashArray: <int>[2, 4]),
     );
 
 class GraficoLinha extends StatelessWidget {
@@ -117,12 +114,12 @@ class GraficoLinha extends StatelessWidget {
     required this.serie,
     this.comparacao,
     this.serieSecundaria,
-    this.cor = AppColors.primary,
     this.corSecundaria = AppColors.accent,
     this.curva = false,
     this.iniciarEmZero = true,
-    this.formatarEixo = fmtCompacto,
     this.formatarValor = fmtInteiro,
+    this.nomeSerie,
+    this.nomeSecundaria,
   });
 
   final List<PontoSerie> serie;
@@ -130,12 +127,23 @@ class GraficoLinha extends StatelessWidget {
   final List<PontoSerie>? comparacao;
 
   final List<PontoSerie>? serieSecundaria;
-  final Color cor;
   final Color corSecundaria;
   final bool curva;
   final bool iniciarEmZero;
-  final String Function(num) formatarEixo;
   final String Function(num) formatarValor;
+
+  final String? nomeSerie;
+  final String? nomeSecundaria;
+
+  bool get _temSecundaria =>
+      serieSecundaria != null && serieSecundaria!.isNotEmpty;
+  bool get _temComparacao => comparacao != null && comparacao!.isNotEmpty;
+
+  List<String?> get _nomes => <String?>[
+        nomeSerie,
+        if (_temSecundaria) nomeSecundaria,
+        if (_temComparacao) nomeSerie == null ? null : 'Período anterior',
+      ];
 
   LineChartBarData _barra(List<PontoSerie> dados, Color cor, bool tracejada) {
     return LineChartBarData(
@@ -166,7 +174,10 @@ class GraficoLinha extends StatelessWidget {
             ? LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
-                colors: <Color>[cor.withValues(alpha: 0.18), cor.withValues(alpha: 0)],
+                colors: <Color>[
+                  cor.withValues(alpha: 0.18),
+                  cor.withValues(alpha: 0)
+                ],
               )
             : null,
       ),
@@ -177,16 +188,18 @@ class GraficoLinha extends StatelessWidget {
         handleBuiltInTouches: true,
         touchTooltipData: LineTouchTooltipData(
           getTooltipColor: (LineBarSpot _) => AppColors.ink,
-          tooltipRoundedRadius: AppSpacing.radius,
+          tooltipRoundedRadius: AppSpacing.radiusSm,
           fitInsideHorizontally: true,
           fitInsideVertically: true,
           getTooltipItems: (List<LineBarSpot> pontos) => <LineTooltipItem>[
             for (final LineBarSpot p in pontos)
               LineTooltipItem(
-                p == pontos.first && p.x.round() < serie.length
-                    ? '${serie[p.x.round()].rotulo}\n${formatarValor(p.y)}'
-                    : formatarValor(p.y),
-                AppTextStyles.caption.copyWith(color: Colors.white),
+                <String>[
+                  if (p == pontos.first && p.x.round() < serie.length)
+                    serie[p.x.round()].rotulo,
+                  _itemTooltip(_nomes[p.barIndex], formatarValor(p.y)),
+                ].join('\n'),
+                _estiloTooltip,
               ),
           ],
         ),
@@ -195,15 +208,21 @@ class GraficoLinha extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (serie.isEmpty) {
-      return const EmptyState(mensagem: 'Sem dados para o período selecionado.');
+      return const EmptyState(
+          mensagem: 'Sem dados para o período selecionado.');
     }
     double? minY = 0;
     double? maxY;
     if (!iniciarEmZero) {
-      final Iterable<double> valores = <PontoSerie>[...serie, ...?serieSecundaria, ...?comparacao]
-          .map((PontoSerie p) => p.valor);
-      final double menor = valores.reduce((double a, double b) => a < b ? a : b);
-      final double maior = valores.reduce((double a, double b) => a > b ? a : b);
+      final Iterable<double> valores = <PontoSerie>[
+        ...serie,
+        ...?serieSecundaria,
+        ...?comparacao
+      ].map((PontoSerie p) => p.valor);
+      final double menor =
+          valores.reduce((double a, double b) => a < b ? a : b);
+      final double maior =
+          valores.reduce((double a, double b) => a > b ? a : b);
       final double folga = (maior - menor) == 0 ? maior * 0.1 : (maior - menor);
       final double passo = _passoRedondo(folga / 4);
       minY = ((menor - folga * 0.3) / passo).floorToDouble() * passo;
@@ -216,14 +235,12 @@ class GraficoLinha extends StatelessWidget {
         maxY: maxY,
         gridData: _grade,
         borderData: FlBorderData(show: false),
-        titlesData: _titulos(serie, formatarEixo: formatarEixo),
+        titlesData: _titulos(serie),
         lineTouchData: _toque,
         lineBarsData: <LineChartBarData>[
-          _barra(serie, cor, false),
-          if (serieSecundaria != null && serieSecundaria!.isNotEmpty)
-            _barra(serieSecundaria!, corSecundaria, false),
-          if (comparacao != null && comparacao!.isNotEmpty)
-            _barra(comparacao!, AppColors.textMuted, true),
+          _barra(serie, AppColors.primary, false),
+          if (_temSecundaria) _barra(serieSecundaria!, corSecundaria, false),
+          if (_temComparacao) _barra(comparacao!, AppColors.textMuted, true),
         ],
       ),
     );
@@ -234,118 +251,55 @@ class GraficoBarras extends StatelessWidget {
   const GraficoBarras({
     super.key,
     required this.serie,
-    this.cor = AppColors.primary,
-    this.serieSecundaria,
-    this.corSecundaria = AppColors.secondary,
+    this.formatarValor = fmtInteiro,
+    this.nomeSerie,
   });
 
   final List<PontoSerie> serie;
-  final Color cor;
-
-  final List<PontoSerie>? serieSecundaria;
-  final Color corSecundaria;
+  final String Function(num) formatarValor;
+  final String? nomeSerie;
 
   @override
   Widget build(BuildContext context) {
     if (serie.isEmpty) {
-      return const EmptyState(mensagem: 'Sem dados para o período selecionado.');
+      return const EmptyState(
+          mensagem: 'Sem dados para o período selecionado.');
     }
     return BarChart(
       BarChartData(
         gridData: _grade,
         borderData: FlBorderData(show: false),
         titlesData: _titulos(serie),
-        barTouchData: BarTouchData(enabled: true),
+        barTouchData: BarTouchData(
+          touchTooltipData: BarTouchTooltipData(
+            getTooltipColor: (BarChartGroupData _) => AppColors.ink,
+            tooltipRoundedRadius: AppSpacing.radiusSm,
+            fitInsideHorizontally: true,
+            fitInsideVertically: true,
+            getTooltipItem: (BarChartGroupData grupo, int i,
+                    BarChartRodData barra, int indiceBarra) =>
+                BarTooltipItem(
+              '${serie[i].rotulo}\n${_itemTooltip(nomeSerie, formatarValor(barra.toY))}',
+              _estiloTooltip,
+            ),
+          ),
+        ),
         barGroups: <BarChartGroupData>[
           for (int i = 0; i < serie.length; i++)
             BarChartGroupData(
               x: i,
-              barsSpace: 4,
               barRods: <BarChartRodData>[
                 BarChartRodData(
                   toY: serie[i].valor,
-                  color: cor,
-                  width: serieSecundaria == null ? 14 : 8,
-                  borderRadius: BorderRadius.zero,
+                  color: AppColors.primary,
+                  width: 18,
+                  borderRadius:
+                      const BorderRadius.vertical(top: Radius.circular(6)),
                 ),
-                if (serieSecundaria != null && i < serieSecundaria!.length)
-                  BarChartRodData(
-                    toY: serieSecundaria![i].valor,
-                    color: corSecundaria,
-                    width: 8,
-                    borderRadius: BorderRadius.zero,
-                  ),
               ],
             ),
         ],
       ),
-    );
-  }
-}
-
-class GraficoPizza extends StatelessWidget {
-  const GraficoPizza({super.key, required this.serie});
-
-  final List<PontoSerie> serie;
-
-  @override
-  Widget build(BuildContext context) {
-    if (serie.isEmpty) {
-      return const EmptyState(mensagem: 'Sem dados para o período selecionado.');
-    }
-    final double total = serie.fold(0, (double a, PontoSerie p) => a + p.valor);
-
-    return Row(
-      children: <Widget>[
-        Expanded(
-          child: LayoutBuilder(
-            builder: (BuildContext context, BoxConstraints c) {
-              final double raio = ((c.maxWidth < c.maxHeight ? c.maxWidth : c.maxHeight) / 2 - 4)
-                  .clamp(40, 94);
-              return PieChart(
-                PieChartData(
-                  sectionsSpace: 2,
-                  centerSpaceRadius: raio * 0.45,
-                  sections: <PieChartSectionData>[
-                    for (int i = 0; i < serie.length; i++)
-                      PieChartSectionData(
-                        value: serie[i].valor,
-                        color: AppColors.chart[i % AppColors.chart.length],
-                        radius: raio * 0.55,
-                        title: total == 0
-                            ? ''
-                            : '${(serie[i].valor / total * 100).toStringAsFixed(0)}%',
-                        titleStyle: const TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                        ),
-                      ),
-                  ],
-                ),
-              );
-            },
-          ),
-        ),
-        const SizedBox(width: AppSpacing.md),
-        Expanded(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              for (int i = 0; i < serie.length; i++)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-                  child: LegendaItem(
-                    cor: AppColors.chart[i % AppColors.chart.length],
-                    texto: serie[i].rotulo,
-                    valor: fmtCompacto(serie[i].valor),
-                  ),
-                ),
-            ],
-          ),
-        ),
-      ],
     );
   }
 }
@@ -380,6 +334,101 @@ class LegendaItem extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
           ),
         ),
+      ],
+    );
+  }
+}
+
+class GraficoBarrasHorizontais extends StatelessWidget {
+  const GraficoBarrasHorizontais({
+    super.key,
+    required this.serie,
+    this.formatarValor = fmtInteiro,
+    this.descrever,
+    this.destaque,
+    this.onTap,
+  });
+
+  final List<PontoSerie> serie;
+  final String Function(num) formatarValor;
+
+  final String Function(String rotulo)? descrever;
+
+  final String? destaque;
+  final ValueChanged<String>? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    if (serie.isEmpty) {
+      return const EmptyState(
+          mensagem: 'Sem dados para o período selecionado.');
+    }
+    final List<PontoSerie> ordenada = <PontoSerie>[...serie]
+      ..sort((PontoSerie a, PontoSerie b) => b.valor.compareTo(a.valor));
+    final double maior = ordenada.first.valor <= 0 ? 1 : ordenada.first.valor;
+
+    return Column(
+      children: <Widget>[
+        for (final PontoSerie p in ordenada)
+          InkWell(
+            onTap: onTap == null ? null : () => onTap!(p.rotulo),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 5),
+              child: Row(
+                children: <Widget>[
+                  SizedBox(
+                    width: 190,
+                    child: Text.rich(
+                      TextSpan(
+                        children: <InlineSpan>[
+                          TextSpan(
+                            text: p.rotulo,
+                            style: AppTextStyles.label
+                                .copyWith(fontWeight: FontWeight.w600),
+                          ),
+                          if (descrever != null)
+                            TextSpan(
+                                text: '  ${descrever!(p.rotulo)}',
+                                style: AppTextStyles.caption),
+                        ],
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  const SizedBox(width: AppSpacing.sm),
+                  Expanded(
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: FractionallySizedBox(
+                        widthFactor: (p.valor / maior).clamp(0.01, 1),
+                        child: Container(
+                          height: 14,
+                          decoration: BoxDecoration(
+                            color: destaque == null || destaque == p.rotulo
+                                ? AppColors.primary
+                                : AppColors.chart[3],
+                            borderRadius: const BorderRadius.horizontal(
+                                right: Radius.circular(7)),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: AppSpacing.sm),
+                  SizedBox(
+                    width: 84,
+                    child: Text(
+                      formatarValor(p.valor),
+                      textAlign: TextAlign.right,
+                      style: AppTextStyles.label
+                          .copyWith(fontFamily: AppTextStyles.mono),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
       ],
     );
   }

@@ -3,25 +3,41 @@ import 'package:go_router/go_router.dart';
 
 import '../../features/assistente/pages/assistente_page.dart';
 import '../../features/configuracoes/pages/configuracoes_page.dart';
-import '../../features/creditos/pages/creditos_page.dart';
+import '../../features/dados/pages/dados_page.dart';
 import '../../features/dashboard/pages/dashboard_page.dart';
-import '../../features/demanda/pages/demanda_page.dart';
-import '../../features/documentos/pages/documentos_page.dart';
-import '../../features/frota/pages/frota_page.dart';
-import '../../features/integracoes/pages/integracoes_page.dart';
+import '../../features/financeiro/pages/financeiro_page.dart';
 import '../../features/login/pages/login_page.dart';
-import '../../features/quilometragem/pages/quilometragem_page.dart';
-import '../../features/receita/pages/receita_page.dart';
-import '../../features/relatorios/pages/relatorios_page.dart';
+import '../../features/login/pages/recuperar_senha_page.dart';
+import '../../features/login/pages/redefinir_senha_page.dart';
+import '../../features/operacao/pages/operacao_page.dart';
 import '../../shared/widgets/app_shell.dart';
 
-/// Rotas do Ferret. Sem guard de autenticacao: o login e apenas visual.
+const Map<String, String> rotasAntigas = <String, String>{
+  '/demanda': '/operacao?aba=demanda',
+  '/frota': '/operacao?aba=frota',
+  '/quilometragem': '/operacao?aba=quilometragem',
+  '/creditos': '/receita?aba=creditos',
+  '/documentos': '/dados?aba=documentos',
+  '/integracoes': '/dados?aba=integracoes',
+  '/relatorios': '/dados?aba=relatorios',
+};
+
 final GoRouter appRouter = GoRouter(
   initialLocation: '/login',
   routes: <RouteBase>[
     GoRoute(
       path: '/login',
       builder: (BuildContext context, GoRouterState state) => const LoginPage(),
+    ),
+    GoRoute(
+      path: '/recuperar-senha',
+      builder: (_, GoRouterState s) =>
+          RecuperarSenhaPage(email: s.uri.queryParameters['email']),
+    ),
+    GoRoute(
+      path: '/redefinir-senha',
+      builder: (_, GoRouterState s) =>
+          RedefinirSenhaPage(token: s.uri.queryParameters['token']),
     ),
     ShellRoute(
       builder: (BuildContext context, GoRouterState state, Widget child) =>
@@ -31,25 +47,29 @@ final GoRouter appRouter = GoRouter(
           path: '/dashboard',
           builder: (_, __) => const DashboardPage(),
         ),
-        GoRoute(path: '/demanda', builder: (_, __) => const DemandaPage()),
-        GoRoute(path: '/receita', builder: (_, __) => const ReceitaPage()),
-        GoRoute(path: '/creditos', builder: (_, __) => const CreditosPage()),
-        GoRoute(path: '/frota', builder: (_, __) => const FrotaPage()),
         GoRoute(
-          path: '/quilometragem',
-          builder: (_, __) => const QuilometragemPage(),
+          path: '/operacao',
+          builder: (_, GoRouterState s) =>
+              OperacaoPage(aba: s.uri.queryParameters['aba']),
         ),
-        GoRoute(path: '/documentos', builder: (_, __) => const DocumentosPage()),
-        GoRoute(path: '/assistente', builder: (_, __) => const AssistentePage()),
-        GoRoute(path: '/relatorios', builder: (_, __) => const RelatoriosPage()),
         GoRoute(
-          path: '/integracoes',
-          builder: (_, __) => const IntegracoesPage(),
+          path: '/receita',
+          builder: (_, GoRouterState s) =>
+              FinanceiroPage(aba: s.uri.queryParameters['aba']),
         ),
+        GoRoute(
+          path: '/dados',
+          builder: (_, GoRouterState s) =>
+              DadosPage(aba: s.uri.queryParameters['aba']),
+        ),
+        GoRoute(
+            path: '/assistente', builder: (_, __) => const AssistentePage()),
         GoRoute(
           path: '/configuracoes',
           builder: (_, __) => const ConfiguracoesPage(),
         ),
+        for (final MapEntry<String, String> antiga in rotasAntigas.entries)
+          GoRoute(path: antiga.key, redirect: (_, __) => antiga.value),
       ],
     ),
   ],
