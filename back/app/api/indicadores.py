@@ -10,7 +10,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy import func, select
 from sqlalchemy.engine import Connection
 
-from app.api.dependencias import obter_conexao, validar_periodo
+from app.api.dependencias import linhas_da_consulta, obter_conexao, validar_periodo
 from app.db import tabelas
 
 rotas = APIRouter(prefix="/indicadores", tags=["indicadores"])
@@ -96,3 +96,58 @@ def resumo(inicio: date, fim: date, conexao: Conexao) -> dict:
         "parcela_nao_pagantes": _dividir(demanda["nao_pagantes"], demanda["total"]),
         "ipk": _dividir(demanda["total"], km_com_passageiros, casas=3),
     }
+
+
+@rotas.get("/diario")
+def diario(inicio: date, fim: date, conexao: Conexao) -> list[dict]:
+    """Uma linha por dia, para os gráficos de evolução. Passageiros vêm null nos dias sem relatório."""
+    validar_periodo(inicio, fim)
+    geral, passageiros = tabelas.resumo_geral, tabelas.passageiros
+    consulta = (
+        select(
+            geral.c.data,
+            geral.c.dia_sem,
+            geral.c.nr_veiculos,
+            geral.c.nr_viagens_progr.label("viagens_programadas"),
+            geral.c.nr_viagens_realiz.label("viagens_realizadas"),
+            geral.c.km_total,
+            passageiros.c.total.label("passageiros"),
+            passageiros.c.nao_pagantes.label("passageiros_nao_pagantes"),
+        )
+        .select_from(geral.outerjoin(passageiros, geral.c.data == passageiros.c.data))
+        .where(geral.c.data.between(inicio, fim))
+        .order_by(geral.c.data)
+    )
+    return linhas_da_consulta(conexao, consulta)
+
+
+@rotas.get("/linhas")
+def linhas(inicio: date, fim: date, conexao: Conexao) -> list[dict]:
+    """Viagens e quilometragem de cada linha no período."""
+    validar_periodo(inicio, fim)
+    t = tabelas.resumo_linha
+    consulta = (
+        select(
+            t.c.linha,
+            func.count().label("dias"),
+            func.sum(t.c.nr_viagens).label("viagens"),
+            func.sum(t.c.km_total).label("km_total"),
+        )
+        .where(t.c.data.between(inicio, fim))
+        .group_by(t.c.linha)
+        .order_by(t.c.linha)
+    )
+    return linhas_da_consulta(conexao, consulta)
+
+
+@rotas.get("/passageiros")
+def passageiros_por_dia(inicio: date, fim: date, conexao: Conexao) -> list[dict]:
+    """Passageiros do sistema por dia. A base não tem passageiros por linha."""
+    validar_periodo(inicio, fim)
+    t = tabelas.passageiros
+    consulta = (
+        select(t.c.data, t.c.catraca, t.c.antecipados, t.c.nao_pagantes, t.c.total)
+        .where(t.c.data.between(inicio, fim))
+        .order_by(t.c.data)
+    )
+    return linhas_da_consulta(conexao, consulta)

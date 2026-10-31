@@ -44,6 +44,14 @@ def cliente():
                  "nao_pagantes": 750, "total": 1150, **ORIGEM},
             ],
         )
+        conexao.execute(
+            tabelas.resumo_linha.insert(),
+            [
+                {"data": date(2026, 8, 1), "linha": "01", "km_total": 400, "nr_viagens": 60, **ORIGEM},
+                {"data": date(2026, 8, 2), "linha": "01", "km_total": 300, "nr_viagens": 40, **ORIGEM},
+                {"data": date(2026, 8, 1), "linha": "02", "km_total": 350, "nr_viagens": 40, **ORIGEM},
+            ],
+        )
 
     def conexao_de_teste():
         with engine.connect() as conexao:
@@ -86,6 +94,32 @@ def test_inicio_depois_do_fim_e_recusado(cliente):
 def test_data_invalida_e_recusada(cliente):
     resposta = cliente.get("/indicadores/resumo", params={"inicio": "ontem", "fim": "2026-08-01"})
     assert resposta.status_code == 422
+
+
+@pytest.mark.filterwarnings("ignore::sqlalchemy.exc.SAWarning")
+def test_diario_traz_passageiros_nulos_quando_nao_ha(cliente):
+    dias = cliente.get("/indicadores/diario", params=PERIODO).json()
+    assert [dia["data"] for dia in dias] == ["2026-08-01", "2026-08-02", "2026-08-03"]
+    assert dias[0]["passageiros"] is None
+    assert dias[1]["passageiros"] == 400
+    assert dias[2]["viagens_realizadas"] == 114
+    assert dias[2]["km_total"] == 1000.0
+
+
+@pytest.mark.filterwarnings("ignore::sqlalchemy.exc.SAWarning")
+def test_linhas_agrupa_por_linha(cliente):
+    linhas = cliente.get("/indicadores/linhas", params=PERIODO).json()
+    assert linhas == [
+        {"linha": "01", "dias": 2, "viagens": 100, "km_total": 700.0},
+        {"linha": "02", "dias": 1, "viagens": 40, "km_total": 350.0},
+    ]
+
+
+def test_passageiros_por_dia(cliente):
+    dias = cliente.get("/indicadores/passageiros", params=PERIODO).json()
+    assert len(dias) == 2
+    assert dias[0] == {"data": "2026-08-02", "catraca": 100, "antecipados": 50,
+                       "nao_pagantes": 250, "total": 400}
 
 
 def test_periodo_disponivel(cliente):
