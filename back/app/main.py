@@ -3,7 +3,11 @@
 
 from fastapi import FastAPI
 
+from app.api import indicadores
+
 app = FastAPI(title="PI SEMOB")
+
+app.include_router(indicadores.rotas)
 
 
 @app.get("/saude")
