@@ -53,7 +53,11 @@ void main() {
 
     await escolherLinha(tester, '03');
 
-    expect(find.byType(EmptyState), findsOneWidget);
+    expect(
+      find.widgetWithText(EmptyState,
+          'Nenhuma viagem deixou de ser iniciada, realizada ou terminada.'),
+      findsOneWidget,
+    );
     expect(find.text('ATENDIMENTO DA 01'), findsNothing);
     expect(tester.takeException(), isNull);
   });

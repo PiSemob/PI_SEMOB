@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/theme/app_theme.dart';
+import '../../../shared/anomalias.dart';
 import '../../../shared/dados_exemplo.dart';
 import '../../../shared/formatters.dart';
 import '../../../shared/painel.dart';
@@ -161,6 +162,9 @@ class AbaFrota extends ConsumerWidget {
                 ],
               ),
             ),
+            _DiasAtipicos(painel: p, filtro: filtro, linha: linha),
+            if (linha != null)
+              _ViagensAtipicas(painel: p, filtro: filtro, linha: linha),
           ],
         );
       },
@@ -219,6 +223,204 @@ class AbaFrota extends ConsumerWidget {
           detalhe: 'na linha ${l.codigo}, no período',
         ),
       ];
+}
+
+bool _noPeriodo(DateTime d, FiltroPeriodo filtro) =>
+    !d.isBefore(filtro.inicio) &&
+    d.isBefore(filtro.fim.add(const Duration(days: 1)));
+
+String _decimal(double? v) =>
+    v == null ? '—' : v.toStringAsFixed(1).replaceAll('.', ',');
+
+String _hora(DateTime d) =>
+    '${d.hour.toString().padLeft(2, '0')}:${d.minute.toString().padLeft(2, '0')}';
+
+Widget _carregandoOuErro<T>(
+  AsyncValue<T> estado,
+  WidgetRef ref,
+  ProviderBase<Object?> provider,
+  Widget Function(T valor) conteudo,
+) =>
+    switch (estado) {
+      AsyncData<T>(:final T value) => conteudo(value),
+      AsyncError<T>(:final Object error) => Column(
+          children: <Widget>[
+            EmptyState(
+              icone: Icons.cloud_off_outlined,
+              mensagem: 'Anomalias indisponíveis.\n$error',
+            ),
+            AppButton(
+              label: 'Tentar de novo',
+              compacto: true,
+              secundario: true,
+              icone: Icons.refresh,
+              onPressed: () => ref.invalidate(provider),
+            ),
+          ],
+        ),
+      _ => const SizedBox(
+          height: 120,
+          child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+        ),
+    };
+
+class _DiasAtipicos extends ConsumerWidget {
+  const _DiasAtipicos(
+      {required this.painel, required this.filtro, required this.linha});
+
+  final Painel painel;
+  final FiltroPeriodo filtro;
+  final String? linha;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final FutureProvider<List<DiaAtipico>> provider =
+        diasAtipicosProvider((inicio: painel.inicio, fim: painel.fim));
+
+    return AppCard(
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          AppSectionTitle(
+            'Dias atípicos',
+            subtitulo:
+                'Isolation Forest: dias em que uma linha fugiu do próprio padrão'
+                '${linha == null ? '' : ' · linha $linha'}'
+                '${linha == null ? ' · escolha uma linha para ver as viagens atípicas dela' : ''}',
+          ),
+          _carregandoOuErro<List<DiaAtipico>>(
+            ref.watch(provider),
+            ref,
+            provider,
+            (List<DiaAtipico> todos) {
+              final List<DiaAtipico> dias = todos
+                  .where((DiaAtipico d) =>
+                      _noPeriodo(d.data, filtro) &&
+                      (linha == null || d.linha == linha))
+                  .toList();
+              if (dias.isEmpty) {
+                return const EmptyState(
+                  icone: Icons.check_circle_outline,
+                  mensagem: 'Nenhum dia atípico no período escolhido.',
+                );
+              }
+              return TabelaOrdenavel<DiaAtipico>(
+                itens: dias,
+                ordenarPor: 3,
+                crescente: false,
+                colunas: <ColunaTabela<DiaAtipico>>[
+                  ColunaTabela<DiaAtipico>(
+                    titulo: 'Data',
+                    valor: (DiaAtipico d) => d.data,
+                    texto: (DiaAtipico d) =>
+                        '${fmtData(d.data)} · ${diasSemana[d.data.weekday - 1]}',
+                  ),
+                  ColunaTabela<DiaAtipico>(
+                    titulo: 'Linha',
+                    valor: (DiaAtipico d) => d.linha,
+                  ),
+                  ColunaTabela<DiaAtipico>(
+                    titulo: 'O que mais destoou',
+                    valor: (DiaAtipico d) => d.explicacao,
+                  ),
+                  ColunaTabela<DiaAtipico>(
+                    titulo: 'Pontuação',
+                    numerica: true,
+                    valor: (DiaAtipico d) => d.pontuacao,
+                    texto: (DiaAtipico d) =>
+                        d.pontuacao.toStringAsFixed(3).replaceAll('.', ','),
+                  ),
+                ],
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ViagensAtipicas extends ConsumerWidget {
+  const _ViagensAtipicas(
+      {required this.painel, required this.filtro, required this.linha});
+
+  final Painel painel;
+  final FiltroPeriodo filtro;
+  final String linha;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final FutureProvider<List<ViagemAtipica>> provider =
+        viagensAtipicasProvider(
+            (linha: linha, inicio: painel.inicio, fim: painel.fim));
+
+    return AppCard(
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          AppSectionTitle(
+            'Viagens atípicas da linha $linha',
+            subtitulo:
+                'DBSCAN: viagens com duração e km diferentes de todas as outras no mesmo sentido',
+          ),
+          _carregandoOuErro<List<ViagemAtipica>>(
+            ref.watch(provider),
+            ref,
+            provider,
+            (List<ViagemAtipica> todas) {
+              final List<ViagemAtipica> viagens = todas
+                  .where((ViagemAtipica v) => _noPeriodo(v.inicio, filtro))
+                  .toList();
+              if (viagens.isEmpty) {
+                return const EmptyState(
+                  icone: Icons.check_circle_outline,
+                  mensagem: 'Nenhuma viagem atípica no período escolhido.',
+                );
+              }
+              return TabelaOrdenavel<ViagemAtipica>(
+                itens: viagens,
+                crescente: false,
+                colunas: <ColunaTabela<ViagemAtipica>>[
+                  ColunaTabela<ViagemAtipica>(
+                    titulo: 'Saída',
+                    valor: (ViagemAtipica v) => v.inicio,
+                    texto: (ViagemAtipica v) =>
+                        '${fmtDiaMes(v.inicio)} ${_hora(v.inicio)}',
+                  ),
+                  ColunaTabela<ViagemAtipica>(
+                    titulo: 'Sentido',
+                    valor: (ViagemAtipica v) => v.sentido ?? '',
+                    texto: (ViagemAtipica v) => v.sentido ?? '—',
+                  ),
+                  ColunaTabela<ViagemAtipica>(
+                    titulo: 'Veículo',
+                    valor: (ViagemAtipica v) => v.prefixo ?? '',
+                    texto: (ViagemAtipica v) => v.prefixo ?? '—',
+                  ),
+                  ColunaTabela<ViagemAtipica>(
+                    titulo: 'Duração (min)',
+                    numerica: true,
+                    valor: (ViagemAtipica v) => v.duracaoMin ?? 0,
+                    texto: (ViagemAtipica v) =>
+                        '${_decimal(v.duracaoMin)} (normal ${_decimal(v.medianaDuracao)})',
+                  ),
+                  ColunaTabela<ViagemAtipica>(
+                    titulo: 'Km',
+                    numerica: true,
+                    valor: (ViagemAtipica v) => v.km ?? 0,
+                    texto: (ViagemAtipica v) =>
+                        '${_decimal(v.km)} (normal ${_decimal(v.medianaKm)})',
+                  ),
+                ],
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class _CalorPorHorario extends StatelessWidget {
