@@ -58,6 +58,48 @@ python -m scripts.exportar_painel
 
 Rode de novo sempre que entrarem relatórios novos. Os períodos ("Últimos 30d" etc.) contam a partir do último dia com dados, não de hoje.
 
+## API (previsões e anomalias)
+
+Os números das telas vêm do `painel.json`. Os resultados dos modelos de machine learning vêm da API do back, porque são calculados na hora:
+
+| Onde aparece | O que mostra | Rota |
+|---|---|---|
+| Cabeçalho | Se a API está no ar (toque para verificar de novo) | `GET /saude` |
+| Operação › Demanda | Previsão de passageiros do sistema nos próximos 7 dias | `GET /previsoes?alvo=passageiros` |
+| Operação › Quilometragem | Previsão de viagens e de km do sistema ou da linha escolhida | `GET /previsoes?alvo=viagens` e `alvo=km` |
+| Operação › Operação da Frota | Dias atípicos de cada linha (Isolation Forest) e, com uma linha escolhida, as viagens atípicas dela (DBSCAN) | `GET /anomalias` |
+
+As anomalias são pedidas para a base inteira, uma vez só, e a tela mostra as que caem no período escolhido. As previsões começam no dia seguinte ao último dado e não mudam com o filtro de período.
+
+Sem a API, o app abre normalmente: o cabeçalho mostra "API fora do ar" e cada cartão de previsão ou anomalia mostra o motivo e um botão "Tentar de novo".
+
+O código fica em [lib/core/api/api_client.dart](lib/core/api/api_client.dart), que usa o `dio`. Nos testes, troque o `apiClientProvider` por uma classe falsa (exemplos em `test/widget/previsao_*_test.dart`).
+
+### Rodar com a API
+
+Em um terminal, suba os bancos e a API (ver o [README da raiz](../README.md#como-rodar)):
+
+```powershell
+cd back
+uvicorn app.main:app --reload
+```
+
+Em outro, de dentro de `front/`:
+
+```powershell
+flutter run -d chrome --dart-define=API_URL=http://localhost:8000
+```
+
+Sem o `--dart-define`, o app usa `http://localhost:8000`.
+
+| Onde o app roda | `API_URL` |
+|---|---|
+| Navegador (Flutter Web) | `http://localhost:8000` |
+| Emulador Android | `http://10.0.2.2:8000` |
+| Celular na mesma rede | `http://<IP do computador>:8000`, com a API iniciada com `--host 0.0.0.0` |
+
+A API só aceita chamadas do navegador vindas de `localhost` e `127.0.0.1` (CORS). No Android 9 ou mais novo e no iOS, o sistema bloqueia endereços `http://` por padrão, então no emulador e no celular as previsões e anomalias ficam indisponíveis até a API ter HTTPS ou o app liberar HTTP para a rede local.
+
 ## Como rodar
 
 ```bash
@@ -67,9 +109,11 @@ flutter test
 dart analyze lib test
 ```
 
+> **Pasta com acento:** se o caminho do projeto tiver acento (como "Área de Trabalho"), o `flutter analyze` trava com `FormatException: Unexpected end of input`. Use o `dart analyze lib test`, que funciona, ou rode de uma pasta sem acento.
+
 ## App no celular
 
-O mesmo código gera o app de Android (pasta `android/`) e de iOS (pasta `ios/`). O app se chama **Ferret** e o identificador é `br.edu.maua.ferret`. Os dados e o mapa vão junto com o app, então ele funciona sem internet.
+O mesmo código gera o app de Android (pasta `android/`) e de iOS (pasta `ios/`). O app se chama **Ferret** e o identificador é `br.edu.maua.ferret`. Os dados e o mapa vão junto com o app, então ele funciona sem internet. Só as previsões e anomalias precisam da API (ver "Rodar com a API").
 
 ### Android
 
@@ -112,11 +156,14 @@ assets/
 lib/
   main.dart
   core/
+    api/api_client.dart         # cliente HTTP da API (dio), apiClientProvider e apiNoArProvider
     autenticacao/               # contrato da recuperação de senha com o back
     router/app_router.dart      # GoRouter + ShellRoute + redirecionamentos
     theme/app_theme.dart        # AppColors, AppSpacing, AppTextStyles, AppTheme
   shared/
     painel.dart                 # modelo dos dados reais e painelProvider
+    previsao.dart               # modelo da previsão e previsaoProvider (API)
+    anomalias.dart              # dias e viagens atípicos e seus providers (API)
     dados_exemplo.dart          # PontoSerie, modelos de relatório, sugestões do Ferret Jr
     formatters.dart             # número, moeda, data, percentual
     providers.dart              # período, linha escolhida, sessão e assistente
@@ -129,6 +176,7 @@ lib/
       mapa_calor.dart           # grade de cores (faixa horária × dia)
       mapa_municipio.dart       # mapa 3D com fluxos
       tabela_ordenavel.dart     # tabela que ordena pela coluna
+      cartao_previsao.dart      # cartão de previsão com gráfico, faixa e erro do modelo
       charts.dart               # linha, barras e barras horizontais
       filtro_periodo_bar.dart   # filtro de período compartilhado
   features/

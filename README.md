@@ -120,7 +120,13 @@ O app mostra os dados reais de `dados/brutos`, a partir de `front/assets/dados/p
 python -m scripts.exportar_painel
 ```
 
-A integração com a API é o próximo passo.
+As previsões e as anomalias vêm da API. Com ela no ar (passo 3), rode o app apontando para ela:
+
+```powershell
+flutter run -d chrome --dart-define=API_URL=http://localhost:8000
+```
+
+Sem a API, o app abre normalmente e avisa no cabeçalho que ela está fora do ar. Os detalhes estão em [front/README.md](front/README.md#api-previsões-e-anomalias).
 
 O mesmo código também gera o app de celular (Android e iOS). Os passos estão em [front/README.md](front/README.md#app-no-celular).
 
