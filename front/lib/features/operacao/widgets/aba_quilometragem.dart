@@ -8,6 +8,7 @@ import '../../../shared/painel.dart';
 import '../../../shared/providers.dart';
 import '../../../shared/widgets/app_shell.dart';
 import '../../../shared/widgets/app_widgets.dart';
+import '../../../shared/widgets/cartao_previsao.dart';
 import '../../../shared/widgets/charts.dart';
 import '../../../shared/widgets/faixa_indicadores.dart';
 import '../../../shared/widgets/filtro_periodo_bar.dart';
@@ -97,6 +98,7 @@ class AbaQuilometragem extends ConsumerWidget {
                 );
               },
             ),
+            _Previsoes(linha: linha),
             AppCard(
               padding: const EdgeInsets.all(AppSpacing.lg),
               child: Column(
@@ -198,6 +200,47 @@ class AbaQuilometragem extends ConsumerWidget {
         detalhe: 'km produtivo dividido pelas viagens',
       ),
     ];
+  }
+}
+
+class _Previsoes extends StatelessWidget {
+  const _Previsoes({required this.linha});
+
+  final String? linha;
+
+  @override
+  Widget build(BuildContext context) {
+    final String deQuem = linha == null ? 'do sistema' : 'da linha $linha';
+    final Widget viagens = CartaoPrevisao(
+      titulo: 'Previsão de viagens $deQuem',
+      pedido: (alvo: 'viagens', linha: linha),
+    );
+    final Widget km = CartaoPrevisao(
+      titulo: 'Previsão de km $deQuem',
+      pedido: (alvo: 'km', linha: linha),
+      formatarValor: (num v) => '${fmtInteiro(v)} km',
+    );
+    return LayoutBuilder(
+      builder: (BuildContext context, BoxConstraints c) {
+        if (c.maxWidth < 1000) {
+          return Column(
+            children: <Widget>[
+              viagens,
+              const SizedBox(height: AppSpacing.md),
+              km
+            ],
+          );
+        }
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Expanded(child: viagens),
+            const SizedBox(width: AppSpacing.md),
+            Expanded(child: km),
+          ],
+        );
+      },
+    );
   }
 }
 
