@@ -38,7 +38,7 @@ API FastAPI  ──────────────▶  app Flutter (front/)
 │   │   │   ├── dados.py      consultas que montam as séries e tabelas dos modelos
 │   │   │   ├── fiscalizacao/ Isolation Forest e DBSCAN
 │   │   │   └── planejamento/ Prophet, SARIMAX e a escolha entre eles
-│   │   ├── api/              rotas da API (em construção)
+│   │   ├── api/              rotas da API: indicadores, anomalias e previsões
 │   │   └── agente/           assistente Ferret Jr (em construção)
 │   ├── scripts/              criar_tabelas, ingerir, treinar, exportar_painel (dados do app)
 │   └── tests/                suíte de testes (ver "Testes")
@@ -162,6 +162,54 @@ Todas têm as colunas de controle `suspeito`, `motivo_suspeita`, `arquivo_origem
 - **Feriados:** entram os nacionais, os do estado de São Paulo e os municipais da lista `FERIADOS_MUNICIPAIS` em `app/ml/planejamento/avaliacao.py`.
 - **Modelos não são salvos:** cada treino leva cerca de um segundo, então os modelos são treinados na hora do pedido, sempre com os dados mais recentes. O que fica salvo é só a escolha do modelo por série. A pasta `back/modelos/` fica fora do Git.
 
+## API
+
+O app nunca fala com o banco: ele chama uma rota e recebe JSON. Com a API no ar (`uvicorn app.main:app --reload`), a página <http://localhost:8000/docs> lista todas as rotas e deixa chamar cada uma pelo botão "Try it out".
+
+| Rota | Parâmetros | Devolve |
+|---|---|---|
+| `GET /saude` | — | `{"status": "ok"}` |
+| `GET /indicadores/periodo` | — | Primeiro e último dia com dados de operação e de passageiros |
+| `GET /indicadores/resumo` | `inicio`, `fim` | Viagens programadas e realizadas, cumprimento, km, passageiros e IPK do período |
+| `GET /indicadores/diario` | `inicio`, `fim` | Uma linha por dia, com viagens, km, veículos e passageiros |
+| `GET /indicadores/linhas` | `inicio`, `fim` | Viagens e km de cada linha |
+| `GET /indicadores/passageiros` | `inicio`, `fim` | Catraca, antecipados, não pagantes e total, por dia |
+| `GET /indicadores/creditos` | `inicio`, `fim` | Vendas e utilização de créditos por dia, e saldos por série |
+| `GET /anomalias` | `modelo`, `inicio`, `fim`, `linha` | Dias atípicos (`isolation_forest`) ou viagens atípicas de uma linha (`dbscan`, exige `linha`) |
+| `GET /previsoes` | `alvo`, `linha`, `dias` | Previsão de `passageiros`, `viagens` ou `km` de 1 a 14 dias (7 por padrão), com intervalo e o erro na validação |
+
+- **Datas** vão e voltam no formato `2026-08-01`.
+- **Números** chegam sempre como número no JSON, inclusive quilometragem e dinheiro.
+- **Passageiros** só existem para o sistema inteiro. A base não tem passageiros por linha.
+- **IPK** (passageiros por quilômetro) usa só os dias que têm passageiros e quilometragem, porque os relatórios de passageiros começam depois dos de operação.
+
+Exemplo:
+
+```
+GET /previsoes?alvo=viagens&linha=04&dias=3
+```
+
+```json
+{
+  "serie": "viagens",
+  "linha": "04",
+  "modelo": "sarimax",
+  "erro_na_validacao": {"mae": 2.2, "mape": 2.8},
+  "previsao": [
+    {"data": "2026-09-15", "previsto": 121.0, "minimo": 113.8, "maximo": 128.2}
+  ]
+}
+```
+
+**Erros:**
+
+| Código | Quando | Corpo |
+|---|---|---|
+| 400 | Pedido que os dados não atendem: início depois do fim, passageiros por linha, DBSCAN sem linha, linha com poucos dias | `{"detail": "<mensagem para mostrar na tela>"}` |
+| 422 | Parâmetro faltando ou em formato errado | Lista de erros gerada pelo FastAPI |
+
+**CORS:** a API aceita chamadas de `localhost` e `127.0.0.1` em qualquer porta, que é onde o Flutter Web roda. Outros endereços são bloqueados pelo navegador.
+
 ## Testes
 
 ### Back
@@ -176,7 +224,7 @@ Cada teste recebe uma marca conforme a pasta em que está, e dá para rodar só 
 
 | Marca | Pasta | Precisa do Docker |
 |---|---|---|
-| `unidade` | `tests/etl`, `tests/ml`, `tests/test_saude.py` | não |
+| `unidade` | `tests/etl`, `tests/ml`, `tests/api`, `tests/test_saude.py` | não |
 | `integracao` | `tests/integracao` | sim |
 | `sistema` | `tests/sistema` | sim |
 | `aceitacao` | `tests/aceitacao` | sim |
