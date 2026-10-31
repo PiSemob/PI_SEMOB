@@ -4,7 +4,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api import anomalias, indicadores
+from app.api import anomalias, indicadores, previsoes
 
 app = FastAPI(title="PI SEMOB")
 
@@ -17,6 +17,7 @@ app.add_middleware(
 
 app.include_router(indicadores.rotas)
 app.include_router(anomalias.rotas)
+app.include_router(previsoes.rotas)
 
 
 @app.get("/saude")
