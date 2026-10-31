@@ -52,6 +52,16 @@ def cliente():
                 {"data": date(2026, 8, 1), "linha": "02", "km_total": 350, "nr_viagens": 40, **ORIGEM},
             ],
         )
+        conexao.execute(
+            tabelas.vendas.insert(),
+            [{"data": date(2026, 8, 1), "total_vendas": 1000.5, "total_utilizacao": 800,
+              "credito_circulante": 200.5, **ORIGEM}],
+        )
+        conexao.execute(
+            tabelas.saldos.insert(),
+            [{"data": date(2026, 8, 1), "serie": "A", "creditos_transferidos": 300,
+              "saldo_final": 5000.25, **ORIGEM}],
+        )
 
     def conexao_de_teste():
         with engine.connect() as conexao:
@@ -120,6 +130,24 @@ def test_passageiros_por_dia(cliente):
     assert len(dias) == 2
     assert dias[0] == {"data": "2026-08-02", "catraca": 100, "antecipados": 50,
                        "nao_pagantes": 250, "total": 400}
+
+
+@pytest.mark.filterwarnings("ignore::sqlalchemy.exc.SAWarning")
+def test_creditos_traz_vendas_e_saldos(cliente):
+    corpo = cliente.get("/indicadores/creditos", params=PERIODO).json()
+    assert corpo["vendas"] == [
+        {"data": "2026-08-01", "total_vendas": 1000.5, "total_utilizacao": 800.0,
+         "credito_circulante": 200.5}
+    ]
+    assert corpo["saldos"] == [
+        {"data": "2026-08-01", "serie": "A", "creditos_transferidos": 300.0, "saldo_final": 5000.25}
+    ]
+
+
+@pytest.mark.filterwarnings("ignore::sqlalchemy.exc.SAWarning")
+def test_creditos_fora_do_periodo_volta_vazio(cliente):
+    corpo = cliente.get("/indicadores/creditos", params={"inicio": "2025-01-01", "fim": "2025-01-31"}).json()
+    assert corpo == {"vendas": [], "saldos": []}
 
 
 def test_periodo_disponivel(cliente):

@@ -151,3 +151,27 @@ def passageiros_por_dia(inicio: date, fim: date, conexao: Conexao) -> list[dict]
         .order_by(t.c.data)
     )
     return linhas_da_consulta(conexao, consulta)
+
+
+@rotas.get("/creditos")
+def creditos(inicio: date, fim: date, conexao: Conexao) -> dict:
+    """Vendas e utilização de créditos por dia, e os saldos por série."""
+    validar_periodo(inicio, fim)
+    vendas, saldos = tabelas.vendas, tabelas.saldos
+    return {
+        "vendas": linhas_da_consulta(
+            conexao,
+            select(
+                vendas.c.data, vendas.c.total_vendas, vendas.c.total_utilizacao,
+                vendas.c.credito_circulante,
+            )
+            .where(vendas.c.data.between(inicio, fim))
+            .order_by(vendas.c.data),
+        ),
+        "saldos": linhas_da_consulta(
+            conexao,
+            select(saldos.c.data, saldos.c.serie, saldos.c.creditos_transferidos, saldos.c.saldo_final)
+            .where(saldos.c.data.between(inicio, fim))
+            .order_by(saldos.c.data, saldos.c.serie),
+        ),
+    }
