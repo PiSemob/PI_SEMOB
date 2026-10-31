@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
+import '../../core/api/api_client.dart';
 import '../../core/theme/app_theme.dart';
 import '../painel.dart';
 import '../providers.dart';
@@ -566,6 +567,8 @@ class _Header extends StatelessWidget {
             ),
           ),
           if (!compacto) const _PeriodoDosDados(),
+          const SizedBox(width: AppSpacing.md),
+          _StatusApi(compacto: compacto),
           const SizedBox(width: AppSpacing.sm),
           IconButton(
             tooltip: 'Notificações',
@@ -609,6 +612,64 @@ class _PeriodoDosDados extends ConsumerWidget {
             style: AppTextStyles.caption.copyWith(fontWeight: FontWeight.w600),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _StatusApi extends ConsumerWidget {
+  const _StatusApi({required this.compacto});
+
+  final bool compacto;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final AsyncValue<bool> estado = ref.watch(apiNoArProvider);
+    final (Color cor, String texto, String dica) = switch (estado) {
+      AsyncData<bool>(value: true) => (
+          AppColors.success,
+          'API no ar',
+          'Previsões e anomalias disponíveis',
+        ),
+      AsyncData<bool>() || AsyncError<bool>() => (
+          AppColors.danger,
+          'API fora do ar',
+          'Previsões e anomalias indisponíveis · toque para tentar de novo',
+        ),
+      _ => (
+          AppColors.textMuted,
+          'Verificando API',
+          'Procurando a API em $apiUrl'
+        ),
+    };
+
+    return Tooltip(
+      message: dica,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+        onTap: estado.isLoading ? null : () => ref.invalidate(apiNoArProvider),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.xs, vertical: AppSpacing.xs),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              Container(
+                width: 8,
+                height: 8,
+                decoration: BoxDecoration(color: cor, shape: BoxShape.circle),
+              ),
+              if (!compacto) ...<Widget>[
+                const SizedBox(width: 6),
+                Text(
+                  texto,
+                  style: AppTextStyles.caption
+                      .copyWith(fontWeight: FontWeight.w600),
+                ),
+              ],
+            ],
+          ),
+        ),
       ),
     );
   }

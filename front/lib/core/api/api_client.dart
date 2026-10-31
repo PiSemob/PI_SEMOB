@@ -87,3 +87,7 @@ class ApiClient {
 /// As telas pegam o cliente por aqui, e os testes podem trocá-lo.
 final Provider<ApiClient> apiClientProvider =
     Provider<ApiClient>((Ref ref) => ApiClient());
+
+/// Verdadeiro quando a API respondeu. Para perguntar de novo, invalide o provider.
+final FutureProvider<bool> apiNoArProvider =
+    FutureProvider<bool>((Ref ref) => ref.watch(apiClientProvider).estaNoAr());
