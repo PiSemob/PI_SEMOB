@@ -9,6 +9,7 @@ import '../../../shared/providers.dart';
 import '../../../shared/widgets/app_shell.dart';
 import '../../../shared/widgets/app_widgets.dart';
 import '../../../shared/widgets/barra_composicao.dart';
+import '../../../shared/widgets/cartao_previsao.dart';
 import '../../../shared/widgets/charts.dart';
 import '../../../shared/widgets/faixa_indicadores.dart';
 import '../../../shared/widgets/filtro_periodo_bar.dart';
@@ -142,6 +143,10 @@ class AbaDemanda extends ConsumerWidget {
                 nomeSerie: 'Pagantes',
                 nomeSecundaria: 'Não pagantes',
               ),
+            ),
+            const CartaoPrevisao(
+              titulo: 'Previsão de passageiros',
+              pedido: (alvo: 'passageiros', linha: null),
             ),
             AppCard(
               padding: const EdgeInsets.all(AppSpacing.lg),
