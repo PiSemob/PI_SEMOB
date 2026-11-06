@@ -13,3 +13,4 @@ back/modelos/
 back/relatorios/
 back/relatorios_run.log
 .coverage
+back/emails/
