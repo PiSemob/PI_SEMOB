@@ -8,6 +8,7 @@ nos últimos dias de cada série e grava o resultado em `back/modelos/escolhas.j
 """
 
 import json
+import logging
 from pathlib import Path
 
 import pandas as pd
@@ -51,4 +52,12 @@ def modelo_escolhido(nome: str, linha: str | None) -> str:
 def prever(nome: str, dias: int = 7, linha: str | None = None) -> dict:
     """Previsão dos próximos dias com o modelo escolhido para a série."""
     escolhido = modelo_escolhido(nome, linha)
-    return MODELOS[escolhido].prever(nome, dias, linha)
+    try:
+        return MODELOS[escolhido].prever(nome, dias, linha)
+    except AttributeError as erro:
+        if escolhido != previsao_prophet.NOME or "stan_backend" not in str(erro):
+            raise
+        logging.getLogger(__name__).warning(
+            "Prophet indisponível (%s); usando SARIMAX para %s.", erro, chave(nome, linha)
+        )
+        return previsao_sarimax.prever(nome, dias, linha)

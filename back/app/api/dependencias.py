@@ -6,10 +6,13 @@
 from collections.abc import Iterator
 from datetime import date
 from decimal import Decimal
+from typing import Annotated
 
 import pandas as pd
-from fastapi import HTTPException
+from fastapi import Depends, Header, HTTPException
 from sqlalchemy.engine import Connection
+
+from app.autenticacao import Usuario, usuario_da_sessao
 
 
 def obter_conexao() -> Iterator[Connection]:
@@ -56,3 +59,25 @@ def tabela_para_json(tabela: pd.DataFrame) -> list[dict]:
             so_data = (tabela[coluna].dt.normalize() == tabela[coluna]).all()
             tabela[coluna] = tabela[coluna].dt.strftime("%Y-%m-%d" if so_data else "%Y-%m-%dT%H:%M:%S")
     return tabela.astype(object).where(tabela.notna(), None).to_dict("records")
+
+
+def token_do_cabecalho(authorization: str | None = Header(default=None)) -> str:
+    if not authorization or not authorization.lower().startswith("bearer "):
+        raise HTTPException(status_code=401, detail="Entre no Ferret para continuar.")
+    return authorization.split(" ", 1)[1].strip()
+
+
+def usuario_atual(
+    token: Annotated[str, Depends(token_do_cabecalho)],
+    conexao: Annotated[Connection, Depends(obter_conexao)],
+) -> Usuario:
+    usuario = usuario_da_sessao(conexao, token)
+    if usuario is None:
+        raise HTTPException(status_code=401, detail="Sua sessão expirou. Entre de novo.")
+    return usuario
+
+
+def administrador_atual(usuario: Annotated[Usuario, Depends(usuario_atual)]) -> Usuario:
+    if not usuario.admin:
+        raise HTTPException(status_code=403, detail="Só administradores podem gerenciar usuários.")
+    return usuario
