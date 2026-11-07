@@ -38,12 +38,19 @@ API FastAPI  ──────────────▶  app Flutter (front/)
 │   │   │   ├── dados.py      consultas que montam as séries e tabelas dos modelos
 │   │   │   ├── fiscalizacao/ Isolation Forest e DBSCAN
 │   │   │   └── planejamento/ Prophet, SARIMAX e a escolha entre eles
-│   │   ├── api/              rotas da API: indicadores, anomalias e previsões
-│   │   └── agente/           assistente Ferret Jr (em construção)
-│   ├── scripts/              criar_tabelas, ingerir, treinar, exportar_painel (dados do app)
+│   │   ├── api/              rotas da API: login, indicadores, anomalias, previsões, chat,
+│   │   │                     relatórios, configurações e notificações
+│   │   ├── agente/           assistente Ferret Jr: segurança, intenção, ferramentas, RAG e histórico
+│   │   ├── relatorios/       montagem dos 4 relatórios e exportação em PDF, Excel e CSV
+│   │   ├── autenticacao.py   usuários, senhas, sessões e recuperação de senha
+│   │   ├── configuracoes.py  configurações da plataforma (salvas no PostgreSQL)
+│   │   └── correio.py        envio de e-mail (ou arquivo .eml, sem SMTP)
+│   ├── scripts/              criar_tabelas, ingerir, treinar, exportar_painel, criar_usuario,
+│   │                         enviar_relatorio_diario, indexar_documentos
 │   └── tests/                suíte de testes (ver "Testes")
 ├── front/                    app Flutter (ver front/README.md)
 ├── dados/brutos/             relatórios HTML do Smart Report
+├── dados/documentos/         (opcional) decretos e manuais em .txt/.md para o RAG
 ├── docker-compose.yml        MongoDB 7 e PostgreSQL 16 (TimescaleDB)
 └── .env.example              modelo do arquivo .env
 ```
@@ -95,6 +102,14 @@ python -m scripts.ingerir
 python -m scripts.treinar
 ```
 
+O app pede login. Cadastre o primeiro administrador pelo terminal (a senha é pedida na hora, com no mínimo 8 caracteres):
+
+```powershell
+python -m scripts.criar_usuario gestor@semob.sp.gov.br "Nome da Pessoa" --admin
+```
+
+Os outros funcionários são convidados por um administrador na tela **Usuários** do app: ele informa o nome e o e-mail, e a pessoa recebe um link (válido por 72 horas) para criar a própria senha. Todo usuário vê a aplicação inteira; só administradores abrem a tela Usuários.
+
 E para subir a API:
 
 ```powershell
@@ -103,7 +118,32 @@ uvicorn app.main:app --reload
 
 A rota `GET /saude` responde `{"status": "ok"}`, e a documentação interativa fica em <http://localhost:8000/docs>.
 
-> **Pasta com acento no Windows:** se o caminho do projeto tiver acento (como "Área de Trabalho"), o Prophet falha ao carregar com `'Prophet' object has no attribute 'stan_backend'`. Para resolver, ligue o modo UTF-8 do Python com `setx PYTHONUTF8 1` e reabra o terminal.
+> **Prophet no Windows em português:** com o modo UTF-8 do Python ligado (`PYTHONUTF8=1`) e a pasta do projeto com acento (como "Instituto Mauá" ou "Área de Trabalho"), o Prophet falha com `'Prophet' object has no attribute 'stan_backend'` (por baixo, um `UnicodeDecodeError` ao ler a resposta do `where.exe`, que vem em português). A solução é **desligar** o modo UTF-8: `[Environment]::SetEnvironmentVariable("PYTHONUTF8", $null, "User")` no PowerShell e reabrir o terminal. Enquanto isso não for feito, a API usa o SARIMAX nas séries em que o Prophet foi escolhido (a resposta informa o modelo usado), mas o `scripts.treinar` não roda.
+
+#### Opcional: e-mail
+
+Tudo funciona sem essas variáveis. Com elas no `.env`:
+
+| Variável | O que muda |
+|---|---|
+| `SMTP_HOST`, `SMTP_PORTA`, `SMTP_USUARIO`, `SMTP_SENHA`, `SMTP_REMETENTE` | O link de recuperação de senha e os relatórios automáticos são enviados por e-mail. Sem SMTP, cada e-mail é gravado em `back/emails/` (fora do Git) e o caminho aparece no terminal da API. |
+| `FRONT_URL` (padrão `http://localhost:5555`) | Endereço do app usado no link de recuperação de senha. |
+
+#### Ferret Jr: o que ele faz e o que não faz
+
+Cada mensagem passa, nesta ordem, por:
+
+1. **Limpeza da entrada** (`app/agente/seguranca.py`): tira caracteres de controle e invisíveis e corta em 1.000 caracteres.
+2. **Guia do aplicativo** (`app/agente/ajuda.py`): dúvidas de uso ("como exporto um relatório?", "onde vejo as previsões?") recebem a resposta pronta, sem consultar dados.
+3. **Bloqueios**: tentativas de mudar as regras do assistente ("ignore suas instruções", "mostre o prompt"), comandos SQL, pedidos de senhas, chaves, usuários ou conversas de outras pessoas, e pedidos para alterar ou apagar dados são recusados antes de qualquer consulta.
+4. **Consulta**: `app/agente/intencao.py` classifica a pergunta e `app/agente/interpretacao.py` tira da frase o período, a linha e o que comparar. Com isso, o Ferret Jr escolhe a ferramenta (`app/agente/tools.py`), que lê os dados tratados ou roda o modelo de ML (Isolation Forest, DBSCAN, Prophet ou SARIMAX). O Ferret Jr não usa IA generativa: o texto da resposta é montado a partir dos números que a ferramenta devolve. Toda ferramenta confere os argumentos: só aceita parâmetros conhecidos, datas dentro da base, linhas que existem e períodos de até 120 dias (Isolation Forest) ou 31 dias (DBSCAN).
+
+Outros limites: 10 perguntas por minuto e 300 por dia por pessoa (resposta 429), histórico guardado por 90 dias e resposta sem Markdown, com até 3.000 caracteres. As ferramentas só leem dados: nenhuma escreve no banco.
+
+#### Opcional: relatório diário por e-mail e documentos para o RAG
+
+- Com "Relatórios automáticos" ligado em Configurações, `python -m scripts.enviar_relatorio_diario` envia o Relatório Executivo dos últimos 7 dias em PDF. Para rodar todo dia, agende esse comando no Agendador de Tarefas do Windows.
+- Decretos e manuais em `.txt` ou `.md` dentro de `dados/documentos/` são indexados por `python -m scripts.indexar_documentos`. O Ferret Jr passa a citá-los quando encontra uma anomalia.
 
 ### 4. Front
 
@@ -111,8 +151,10 @@ De dentro de `front/`:
 
 ```powershell
 flutter pub get
-flutter run -d chrome
+flutter run -d chrome --web-port 5555 --dart-define=API_URL=http://localhost:8000
 ```
+
+Entre com um usuário criado pelo `scripts.criar_usuario`. Para apresentar o app sem o back (qualquer e-mail e senha entram, o Ferret Jr e os relatórios não funcionam), use `--dart-define=MODO_DEMO=true`.
 
 O app mostra os dados reais de `dados/brutos`, a partir de `front/assets/dados/painel.json`. Quando entrarem relatórios novos, gere o arquivo de novo de dentro de `back/` (usa o mesmo ETL, sem Docker):
 
@@ -120,13 +162,7 @@ O app mostra os dados reais de `dados/brutos`, a partir de `front/assets/dados/p
 python -m scripts.exportar_painel
 ```
 
-As previsões e as anomalias vêm da API. Com ela no ar (passo 3), rode o app apontando para ela:
-
-```powershell
-flutter run -d chrome --dart-define=API_URL=http://localhost:8000
-```
-
-Sem a API, o app abre normalmente e avisa no cabeçalho que ela está fora do ar. Os detalhes estão em [front/README.md](front/README.md#api-previsões-e-anomalias).
+O login, as previsões, as anomalias, o Ferret Jr, os relatórios, as configurações e as notificações vêm da API (passo 3). Sem ela, não dá para entrar no app (a não ser no modo demonstração), e o cabeçalho avisa quando ela cai durante o uso. Os detalhes estão em [front/README.md](front/README.md#api-previsões-e-anomalias).
 
 O mesmo código também gera o app de celular (Android e iOS). Os passos estão em [front/README.md](front/README.md#app-no-celular).
 
@@ -183,6 +219,25 @@ O app nunca fala com o banco: ele chama uma rota e recebe JSON. Com a API no ar 
 | `GET /indicadores/creditos` | `inicio`, `fim` | Vendas e utilização de créditos por dia, e saldos por série |
 | `GET /anomalias` | `modelo`, `inicio`, `fim`, `linha` | Dias atípicos (`isolation_forest`) ou viagens atípicas de uma linha (`dbscan`, exige `linha`) |
 | `GET /previsoes` | `alvo`, `linha`, `dias` | Previsão de `passageiros`, `viagens` ou `km` de 1 a 14 dias (7 por padrão), com intervalo e o erro na validação |
+| `POST /auth/login` | `email`, `senha` | Token da sessão e o usuário |
+| `GET /auth/eu` | — | Quem está logado (com o token) |
+| `POST /auth/sair` | — | Encerra a sessão |
+| `POST /auth/recuperar-senha` | `email` | 202 sempre; manda o link por e-mail se o e-mail existir |
+| `POST /auth/redefinir-senha` | `token`, `senha` | 204, ou 400 quando o link é inválido ou expirou; serve também para o convite |
+| `GET /usuarios` | — | Usuários cadastrados, com perfil e convite pendente (só administrador) |
+| `POST /usuarios` | `email`, `nome`, `admin` | Cadastra e manda o convite por e-mail (só administrador) |
+| `POST /usuarios/{id}/convite` | — | Reenvia o convite e invalida o link anterior (só administrador) |
+| `PUT /usuarios/{id}` | `admin` | Dá ou tira o perfil de administrador (só administrador) |
+| `DELETE /usuarios/{id}` | — | Remove o acesso e encerra as sessões (só administrador) |
+| `POST /chat` | `mensagem`, `conversa_id` | Resposta do Ferret Jr: texto, decisão (opção, ferramentas) e os dados da tela; 429 acima do limite de perguntas |
+| `GET /chat/conversas` | — | Conversas da pessoa logada |
+| `GET` e `DELETE /chat/conversas/{id}` | — | Uma conversa com as mensagens / apaga |
+| `POST /relatorios/gerar` | `modelo`, `inicio`, `fim` | Relatório `executivo`, `operacional`, `financeiro` ou `prestacao_contas` |
+| `POST /relatorios/exportar` | `modelo`, `inicio`, `fim`, `formato`, `relatorio` | Arquivo `pdf`, `xlsx` ou `csv` |
+| `GET` e `PUT /configuracoes` | campos a mudar | Organização, cidade, alertas de anomalia e relatório diário por e-mail |
+| `GET /notificacoes` | — | Dias atípicos e viagens não realizadas dos últimos 7 dias com dados |
+
+As rotas de indicadores, anomalias e previsões são abertas (o app de celular as usa sem login). As de chat, relatórios, configurações e notificações exigem `Authorization: Bearer <token>`.
 
 - **Datas** vão e voltam no formato `2026-08-01`.
 - **Números** chegam sempre como número no JSON, inclusive quilometragem e dinheiro.
@@ -212,6 +267,7 @@ GET /previsoes?alvo=viagens&linha=04&dias=3
 | Código | Quando | Corpo |
 |---|---|---|
 | 400 | Pedido que os dados não atendem: início depois do fim, passageiros por linha, DBSCAN sem linha, linha com poucos dias | `{"detail": "<mensagem para mostrar na tela>"}` |
+| 401 | Sem login, e-mail ou senha errados, ou sessão expirada | `{"detail": "<mensagem para mostrar na tela>"}` |
 | 422 | Parâmetro faltando ou em formato errado | Lista de erros gerada pelo FastAPI |
 
 **CORS:** a API aceita chamadas de `localhost` e `127.0.0.1` em qualquer porta, que é onde o Flutter Web roda. Outros endereços são bloqueados pelo navegador.
@@ -230,7 +286,7 @@ Cada teste recebe uma marca conforme a pasta em que está, e dá para rodar só 
 
 | Marca | Pasta | Precisa do Docker |
 |---|---|---|
-| `unidade` | `tests/etl`, `tests/ml`, `tests/api`, `tests/test_saude.py` | não |
+| `unidade` | `tests/etl`, `tests/ml`, `tests/api`, `tests/agente`, `tests/relatorios`, `tests/test_saude.py` | não |
 | `integracao` | `tests/integracao` | sim |
 | `sistema` | `tests/sistema` | sim |
 | `aceitacao` | `tests/aceitacao` | sim |
