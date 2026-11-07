@@ -1,0 +1,43 @@
+pergunta,opcao_esperada
+Qual linha fez mais viagens em agosto?,consulta
+Quantos passageiros não pagantes tivemos na última semana?,consulta
+Em que horário a frota tem mais partidas?,consulta
+Quais viagens não foram realizadas em setembro?,consulta
+Como estão as vendas de créditos comparadas à utilização?,comparacao
+Qual foi o cumprimento de viagens do último mês?,consulta
+Quantos km a frota rodou em julho?,consulta
+Qual o IPK de agosto?,consulta
+Quantas viagens a linha 03 fez ontem?,consulta
+Qual é o horário de pico da linha 02?,consulta
+Quanto vendemos de crédito na última quinzena?,consulta
+Qual a gratuidade do sistema em setembro?,consulta
+Quais linhas rodaram menos em agosto?,consulta
+Até quando vão os dados?,consulta
+Houve viagem não iniciada na última semana?,consulta
+Compare as viagens de julho e agosto,comparacao
+Os passageiros cresceram em setembro?,comparacao
+Como foi agosto em relação a julho?,comparacao
+Diferença entre a quilometragem de agosto e setembro,comparacao
+Tem algo estranho na operação hoje?,isolation_forest
+Algum dia fora do padrão em agosto?,isolation_forest
+Quais linhas tiveram comportamento atípico no último mês?,isolation_forest
+Existe indício de irregularidade na operação de setembro?,isolation_forest
+Mostre as anomalias da linha 07,isolation_forest
+Tem viagem estranha na linha 04?,dbscan
+Quais viagens da linha 02 estão fora do padrão em agosto?,dbscan
+Viagens atípicas da linha 10 na última semana,dbscan
+Rode o DBSCAN na linha 05,dbscan
+Previsão de viagens da linha 14 na semana que vem,previsao
+Quantos passageiros vamos ter amanhã?,previsao
+Qual a previsão de km do sistema para os próximos 14 dias?,previsao
+Quanto esperar de demanda na próxima semana?,previsao
+Projeção de viagens da linha 03 para a próxima quinzena,previsao
+O que é IPK?,conversa
+Como funciona o Isolation Forest?,conversa
+Explique o que é cumprimento de viagens,conversa
+Obrigado pela ajuda,conversa
+Qual a previsão do tempo amanhã?,fora_do_escopo
+Quem ganhou o jogo do Corinthians?,fora_do_escopo
+Me passa uma receita de bolo,fora_do_escopo
+Qual a cotação do bitcoin hoje?,fora_do_escopo
+Recomende um filme para o fim de semana,fora_do_escopo
