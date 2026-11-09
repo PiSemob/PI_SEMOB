@@ -17,7 +17,7 @@ Todos os tokens ficam em [lib/core/theme/app_theme.dart](lib/core/theme/app_them
 | `AppTextStyles` | display, title, section, metric, body, label, caption, overline | IBM Plex Sans na interface; IBM Plex Mono nos números |
 
 Elementos de marca compartilhados em [lib/shared/widgets/app_widgets.dart](lib/shared/widgets/app_widgets.dart):
-`AppLogo`, `LogoScs` e `FundoMarca` (fundo em degradê azul-claro do login).
+`AppLogo` e `FundoMarca` (fundo em degradê azul-claro do login).
 
 O mapa do município fica em [lib/shared/widgets/mapa_municipio.dart](lib/shared/widgets/mapa_municipio.dart) e lê os GeoJSON de `assets/mapas/` (dados do OpenStreetMap; veja o `LEIA-ME.txt` da pasta). Ele aparece inclinado, em 3D, e mostra o fluxo de viagens: um arco por linha, da Estação São Caetano ao bairro atendido, mais grosso quanto mais viagens. Está no login, na Visão geral e em Operação da Frota.
 
@@ -35,17 +35,25 @@ Quatro telas e o assistente. As telas que o stakeholder pediu continuam, como ab
 
 Configurações abre pela engrenagem ao lado do usuário. Os endereços antigos (`/demanda`, `/frota`, `/creditos` etc.) redirecionam para a aba certa.
 
-### Recuperação de senha
+### Login e recuperação de senha
 
-O "Esqueci minha senha" do login abre `/recuperar-senha`, já com o e-mail digitado. A pessoa recebe por e-mail um link para `/redefinir-senha?token=...`, onde cria a senha nova (mínimo de 8 caracteres).
+O login fala com a API (`POST /auth/login`). O primeiro administrador é criado no back com `python -m scripts.criar_usuario ... --admin`; os outros funcionários são convidados na tela **Usuários** (`/usuarios`), que só aparece no menu e só abre para administradores. O convite chega por e-mail com um link para `/#/criar-senha?token=...`, a mesma tela da redefinição com textos de boas-vindas. O token fica guardado no aparelho (`shared_preferences`), então recarregar a página não desloga; ao abrir, o app confere com `GET /auth/eu` se o token ainda vale. Sem login, qualquer endereço leva a `/login` (proteção em `protegerRota`, em [lib/core/router/app_router.dart](lib/core/router/app_router.dart)). Se a API responder 401 no meio do uso, a sessão é encerrada e o login avisa que ela expirou.
 
-As telas falam só com a interface `ServicoAutenticacao`, em [lib/core/autenticacao/servico_autenticacao.dart](lib/core/autenticacao/servico_autenticacao.dart). Por enquanto ela usa a versão de demonstração, que não envia e-mail e mostra um botão no lugar do link. Para ligar no back:
+O "Esqueci minha senha" abre `/recuperar-senha`, já com o e-mail digitado, e chama `POST /auth/recuperar-senha`. A pessoa recebe por e-mail um link para `/#/redefinir-senha?token=...` (válido por 60 minutos e uma vez só), onde cria a senha nova com no mínimo 8 caracteres (`POST /auth/redefinir-senha`). Sem SMTP configurado no back, o e-mail é gravado em `back/emails/`.
 
-1. Criar as rotas em `back/app/api/autenticacao.py`:
-   - `POST /auth/recuperar-senha` com `{"email": "..."}`: responde 202 sempre, exista ou não o e-mail, para não revelar quem tem cadastro;
-   - `POST /auth/redefinir-senha` com `{"token": "...", "senha": "..."}`: responde 204, ou 400 com `{"detail": "..."}` quando o link é inválido ou expirou.
-2. No front, criar uma classe que implementa `ServicoAutenticacao` chamando essas rotas e lançando `ErroAutenticacao` com o `detail` em caso de erro.
-3. Trocar o `servicoAutenticacaoProvider` para essa classe. As telas não mudam.
+As telas falam só com a interface `ServicoAutenticacao`, em [lib/core/autenticacao/servico_autenticacao.dart](lib/core/autenticacao/servico_autenticacao.dart). A versão `ServicoAutenticacaoApi` é a padrão; a `ServicoAutenticacaoDemo` (qualquer e-mail e senha entram, nenhum e-mail sai) só é usada com `--dart-define=MODO_DEMO=true`.
+
+### Ferret Jr, relatórios, configurações e notificações
+
+| Onde | O que faz | Rotas |
+|---|---|---|
+| Ferret Jr | Envia a pergunta, mostra a resposta com os números em tabela, guarda as conversas no back (histórico na lateral, com opção de apagar) | `POST /chat`, `GET/DELETE /chat/conversas` |
+| Dados e relatórios › Relatórios | "Gerar relatório" monta o relatório do período escolhido; PDF, Excel e CSV baixam o arquivo (no navegador, como download; no celular ou computador, na pasta de downloads) | `POST /relatorios/gerar`, `POST /relatorios/exportar` |
+| Botão "Exportar" do cabeçalho | Leva para a aba Relatórios | — |
+| Configurações | Carrega e salva no back; vale para todos os usuários | `GET/PUT /configuracoes` |
+| Sino do cabeçalho | Dias atípicos e viagens não realizadas dos últimos 7 dias com dados; o número some depois de aberto | `GET /notificacoes` |
+
+As Configurações têm só o que é da operação: nome da organização e cidade (cabeçalho dos relatórios), alertas de anomalia e o envio diário do Relatório Executivo por e-mail. O app confere a API e as notificações a cada 60 segundos.
 
 ## Dados
 
@@ -157,7 +165,8 @@ lib/
   main.dart
   core/
     api/api_client.dart         # cliente HTTP da API (dio), apiClientProvider e apiNoArProvider
-    autenticacao/               # contrato da recuperação de senha com o back
+    autenticacao/               # sessão (token guardado) e ServicoAutenticacao (API ou demonstração)
+    download/                   # salvar arquivo exportado (web: download; celular/computador: pasta)
     router/app_router.dart      # GoRouter + ShellRoute + redirecionamentos
     theme/app_theme.dart        # AppColors, AppSpacing, AppTextStyles, AppTheme
   shared/
@@ -166,7 +175,9 @@ lib/
     anomalias.dart              # dias e viagens atípicos e seus providers (API)
     dados_exemplo.dart          # PontoSerie, modelos de relatório, sugestões do Ferret Jr
     formatters.dart             # número, moeda, data, percentual
-    providers.dart              # período, linha escolhida, sessão e assistente
+    providers.dart              # período e linha escolhida
+    configuracoes.dart          # modelo das configurações
+    notificacoes.dart           # avisos do sino e notificacoesProvider (API)
     widgets/
       app_shell.dart            # menu, header e PaginaConteudo
       app_widgets.dart          # AppCard, AppButton, AppTextField, TagFiltro...
@@ -179,12 +190,17 @@ lib/
       cartao_previsao.dart      # cartão de previsão com gráfico, faixa e erro do modelo
       charts.dart               # linha, barras e barras horizontais
       filtro_periodo_bar.dart   # filtro de período compartilhado
+      cartao_dados.dart         # indicadores e tabela de uma resposta do Ferret Jr ou seção de relatório
+      sino_notificacoes.dart    # sino do cabeçalho e atualização a cada 60 s
+      secoes.dart               # seções de formulário usadas em Configurações e Usuários
   features/
-    login/                      # login, esqueci minha senha e senha nova
+    login/                      # login, esqueci minha senha, senha nova e convite
     dashboard/ operacao/ financeiro/ dados/
     assistente/ relatorios/ configuracoes/
+    usuarios/                   # convite, perfil e remoção de usuários (só administrador)
 test/
   apoio/painel_teste.dart       # painel pequeno e fixo para os testes
+  apoio/api_falsa.dart          # API e serviço de login falsos para os testes
   unit/  widget/
 ```
 
