@@ -7,11 +7,13 @@ class PontoSerie {
 
 class ModeloRelatorio {
   const ModeloRelatorio({
+    required this.id,
     required this.icone,
     required this.nome,
     required this.descricao,
   });
 
+  final String id;
   final String icone;
   final String nome;
   final String descricao;
@@ -22,21 +24,25 @@ class DadosExemplo {
 
   static const List<ModeloRelatorio> modelosRelatorio = <ModeloRelatorio>[
     ModeloRelatorio(
+      id: 'executivo',
       icone: '📊',
       nome: 'Relatório Executivo',
       descricao: 'Resumo estratégico para prefeito e gestores',
     ),
     ModeloRelatorio(
+      id: 'operacional',
       icone: '🚌',
       nome: 'Relatório Operacional',
       descricao: 'Viagens, frota, quilometragem e cumprimento',
     ),
     ModeloRelatorio(
+      id: 'financeiro',
       icone: '💰',
       nome: 'Relatório Financeiro',
       descricao: 'Venda e utilização de créditos, saldo em circulação',
     ),
     ModeloRelatorio(
+      id: 'prestacao_contas',
       icone: '📋',
       nome: 'Prestação de Contas',
       descricao: 'Relatório regulatório para SEMOB-SCS',
