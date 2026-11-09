@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/autenticacao/servico_autenticacao.dart';
+import '../../../core/autenticacao/sessao.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../shared/providers.dart';
 import '../../../shared/widgets/app_widgets.dart';
 import '../widgets/layout_acesso.dart';
 
@@ -29,10 +30,30 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     super.dispose();
   }
 
-  void _entrar() {
-    if (!_formKey.currentState!.validate()) return;
-    ref.read(sessaoProvider.notifier).entrar(_email.text.trim());
-    context.go('/dashboard');
+  bool _entrando = false;
+  String? _erro;
+
+  Future<void> _entrar() async {
+    if (_entrando || !_formKey.currentState!.validate()) return;
+    setState(() {
+      _entrando = true;
+      _erro = null;
+    });
+    try {
+      final Sessao sessao = await ref
+          .read(servicoAutenticacaoProvider)
+          .entrar(_email.text.trim(), _senha.text);
+      ref.read(sessaoProvider.notifier).entrar(sessao);
+      if (mounted) context.go('/dashboard');
+    } on ErroAutenticacao catch (e) {
+      if (mounted) setState(() => _erro = e.mensagem);
+    } catch (_) {
+      if (mounted) {
+        setState(() => _erro = 'Não foi possível entrar agora. Tente de novo.');
+      }
+    } finally {
+      if (mounted) setState(() => _entrando = false);
+    }
   }
 
   void _esqueciSenha() {
@@ -86,13 +107,33 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                 child: const Text('Esqueci minha senha'),
               ),
             ),
+            if (_erro != null) ...<Widget>[
+              AvisoAcesso(
+                titulo: 'Não entrou.',
+                texto: _erro!,
+                icone: Icons.error_outline,
+                cor: AppColors.danger,
+              ),
+              const SizedBox(height: AppSpacing.md),
+            ] else if (ref.read(sessaoProvider.notifier).expirada) ...<Widget>[
+              const AvisoAcesso(
+                titulo: 'Sessão encerrada.',
+                texto: 'Sua sessão expirou. Entre de novo para continuar.',
+              ),
+              const SizedBox(height: AppSpacing.md),
+            ],
             const SizedBox(height: AppSpacing.sm),
-            AppButton(label: 'Entrar', onPressed: _entrar),
-            const SizedBox(height: AppSpacing.lg),
-            const AvisoAcesso(
-              titulo: 'Modo demonstração.',
-              texto: 'Qualquer e-mail e senha dão acesso ao painel.',
-            ),
+            AppButton(
+                label: 'Entrar', onPressed: _entrar, carregando: _entrando),
+            if (ref
+                .watch(servicoAutenticacaoProvider)
+                .demonstracao) ...<Widget>[
+              const SizedBox(height: AppSpacing.lg),
+              const AvisoAcesso(
+                titulo: 'Modo demonstração.',
+                texto: 'Qualquer e-mail e senha dão acesso ao painel.',
+              ),
+            ],
           ],
         ),
       ),
