@@ -207,14 +207,9 @@ class _PainelMarca extends ConsumerWidget {
           ),
           const Divider(height: 1),
           const SizedBox(height: AppSpacing.md),
-          const Row(
-            children: <Widget>[
-              Expanded(child: LogoScs(altura: 32)),
-              Text(
-                'Instituto Mauá de Tecnologia',
-                style: AppTextStyles.caption,
-              ),
-            ],
+          const Text(
+            'Instituto Mauá de Tecnologia',
+            style: AppTextStyles.caption,
           ),
           const SizedBox(height: AppSpacing.sm),
           Text(

@@ -9,10 +9,54 @@ import '../widgets/layout_acesso.dart';
 
 const int tamanhoMinimoSenha = 8;
 
+class _Textos {
+  const _Textos({
+    required this.titulo,
+    required this.instrucao,
+    required this.campo,
+    required this.salvo,
+    required this.linkInvalido,
+    required this.botaoInvalido,
+    required this.rotaInvalido,
+  });
+
+  final String titulo;
+  final String instrucao;
+  final String campo;
+  final String salvo;
+  final String linkInvalido;
+  final String botaoInvalido;
+  final String rotaInvalido;
+}
+
+const _Textos _redefinicao = _Textos(
+  titulo: 'Criar senha nova',
+  instrucao: 'Escolha uma senha com pelo menos $tamanhoMinimoSenha caracteres.',
+  campo: 'Senha nova',
+  salvo: 'Pronto. Use a senha nova para entrar no Ferret.',
+  linkInvalido:
+      'Este link de redefinição está incompleto ou expirou. Peça um novo.',
+  botaoInvalido: 'Pedir um novo link',
+  rotaInvalido: '/recuperar-senha',
+);
+
+const _Textos _convite = _Textos(
+  titulo: 'Boas-vindas ao Ferret',
+  instrucao:
+      'Crie a sua senha de acesso, com pelo menos $tamanhoMinimoSenha caracteres.',
+  campo: 'Senha',
+  salvo: 'Pronto. Entre no Ferret com o seu e-mail e a senha que você criou.',
+  linkInvalido:
+      'Este convite está incompleto ou expirou. Peça ao administrador que reenvie o convite.',
+  botaoInvalido: 'Ir para o login',
+  rotaInvalido: '/login',
+);
+
 class RedefinirSenhaPage extends ConsumerStatefulWidget {
-  const RedefinirSenhaPage({super.key, this.token});
+  const RedefinirSenhaPage({super.key, this.token, this.convite = false});
 
   final String? token;
+  final bool convite;
 
   @override
   ConsumerState<RedefinirSenhaPage> createState() => _RedefinirSenhaPageState();
@@ -25,6 +69,8 @@ class _RedefinirSenhaPageState extends ConsumerState<RedefinirSenhaPage> {
   bool _salvando = false;
   bool _salvo = false;
   String? _erro;
+
+  _Textos get _textos => widget.convite ? _convite : _redefinicao;
 
   @override
   void dispose() {
@@ -60,21 +106,20 @@ class _RedefinirSenhaPageState extends ConsumerState<RedefinirSenhaPage> {
   Widget build(BuildContext context) {
     final Widget conteudo;
     if (widget.token == null || widget.token!.isEmpty) {
-      conteudo = const _Resultado(
+      conteudo = _Resultado(
         icone: Icons.link_off,
         cor: AppColors.warning,
         titulo: 'Link inválido',
-        texto:
-            'Este link de redefinição está incompleto ou expirou. Peça um novo.',
-        botao: 'Pedir um novo link',
-        rota: '/recuperar-senha',
+        texto: _textos.linkInvalido,
+        botao: _textos.botaoInvalido,
+        rota: _textos.rotaInvalido,
       );
     } else if (_salvo) {
-      conteudo = const _Resultado(
+      conteudo = _Resultado(
         icone: Icons.check_circle_outline,
         cor: AppColors.success,
-        titulo: 'Senha alterada',
-        texto: 'Pronto. Use a senha nova para entrar no Ferret.',
+        titulo: widget.convite ? 'Senha criada' : 'Senha alterada',
+        texto: _textos.salvo,
         botao: 'Ir para o login',
         rota: '/login',
       );
@@ -91,14 +136,10 @@ class _RedefinirSenhaPageState extends ConsumerState<RedefinirSenhaPage> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
-          const CabecalhoAcesso(
-            titulo: 'Criar senha nova',
-            texto:
-                'Escolha uma senha com pelo menos $tamanhoMinimoSenha caracteres.',
-          ),
+          CabecalhoAcesso(titulo: _textos.titulo, texto: _textos.instrucao),
           const SizedBox(height: AppSpacing.xl),
           AppTextField(
-            label: 'Senha nova',
+            label: _textos.campo,
             controller: _senha,
             icone: Icons.lock_outline,
             obscure: true,
@@ -109,7 +150,7 @@ class _RedefinirSenhaPageState extends ConsumerState<RedefinirSenhaPage> {
           ),
           const SizedBox(height: AppSpacing.md + 4),
           AppTextField(
-            label: 'Confirme a senha nova',
+            label: 'Confirme a ${_textos.campo.toLowerCase()}',
             controller: _confirmacao,
             icone: Icons.lock_outline,
             obscure: true,

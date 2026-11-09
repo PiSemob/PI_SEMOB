@@ -1,18 +1,14 @@
 Logos do aplicativo
 ===================
 
-Coloque nesta pasta dois arquivos, com exatamente estes nomes:
+Arquivos desta pasta (nomes fixos, usados pelo código):
 
-  ferret.png   Logo do Ferret. Aparece na barra lateral, no login e nas configuracoes.
-  scs.png      Logo da Prefeitura de Sao Caetano do Sul. Aparece na barra lateral e no login.
+  ferret.png      Logo do Ferret (fundo transparente). Aparece na barra lateral,
+                  no login e nas configurações.
+  ferret_jr.jpg   Foto do mascote, usada como avatar do assistente Ferret Jr.
 
-Recomendacoes:
-  - PNG com fundo transparente.
-  - Pelo menos 256 pixels de altura, para ficar nitido.
-  - O app usa fundo claro: prefira a versao escura ou colorida do logo.
+Enquanto um arquivo não existir, o app mostra uma marca desenhada no lugar
+("F" para o Ferret e um ícone para o Ferret Jr), sem dar erro.
 
-Enquanto um arquivo nao existir, o app mostra uma marca desenhada no lugar
-("F" para o Ferret e "SCS" para a prefeitura), sem dar erro.
-
-Depois de colocar os arquivos, pare o app e rode "flutter run" de novo:
-imagem nova so entra com uma nova compilacao.
+Depois de trocar um arquivo, pare o app e rode "flutter run" de novo:
+imagem nova só entra com uma nova compilação.

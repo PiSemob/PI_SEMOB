@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+export '../core/autenticacao/sessao.dart' show Sessao, sessaoProvider;
+
 import 'formatters.dart';
 import 'painel.dart';
 
@@ -118,109 +120,3 @@ final NotifierProvider<LinhaSelecionadaNotifier, String?>
     linhaSelecionadaProvider =
     NotifierProvider<LinhaSelecionadaNotifier, String?>(
         LinhaSelecionadaNotifier.new);
-
-class SessaoNotifier extends Notifier<String?> {
-  @override
-  String? build() => null;
-
-  void entrar(String email) => state = email;
-
-  void sair() => state = null;
-}
-
-final NotifierProvider<SessaoNotifier, String?> sessaoProvider =
-    NotifierProvider<SessaoNotifier, String?>(SessaoNotifier.new);
-
-@immutable
-class Mensagem {
-  const Mensagem({required this.texto, required this.doUsuario});
-
-  final String texto;
-  final bool doUsuario;
-}
-
-@immutable
-class Conversa {
-  const Conversa(
-      {required this.id, required this.titulo, required this.mensagens});
-
-  final String id;
-  final String titulo;
-  final List<Mensagem> mensagens;
-
-  Conversa copyWith({String? titulo, List<Mensagem>? mensagens}) => Conversa(
-        id: id,
-        titulo: titulo ?? this.titulo,
-        mensagens: mensagens ?? this.mensagens,
-      );
-}
-
-@immutable
-class EstadoAssistente {
-  const EstadoAssistente(
-      {required this.conversas, required this.selecionadaId});
-
-  final List<Conversa> conversas;
-  final String selecionadaId;
-
-  Conversa get atual =>
-      conversas.firstWhere((Conversa c) => c.id == selecionadaId);
-}
-
-class AssistenteNotifier extends Notifier<EstadoAssistente> {
-  @override
-  EstadoAssistente build() {
-    const Conversa inicial =
-        Conversa(id: '1', titulo: 'Nova conversa', mensagens: <Mensagem>[]);
-    return const EstadoAssistente(
-        conversas: <Conversa>[inicial], selecionadaId: '1');
-  }
-
-  void novaConversa() {
-    final String id = DateTime.now().millisecondsSinceEpoch.toString();
-    state = EstadoAssistente(
-      conversas: <Conversa>[
-        Conversa(
-            id: id, titulo: 'Nova conversa', mensagens: const <Mensagem>[]),
-        ...state.conversas,
-      ],
-      selecionadaId: id,
-    );
-  }
-
-  void selecionar(String id) =>
-      state = EstadoAssistente(conversas: state.conversas, selecionadaId: id);
-
-  void enviar(String texto) {
-    final String conteudo = texto.trim();
-    if (conteudo.isEmpty) return;
-
-    final Conversa atual = state.atual;
-    final List<Mensagem> mensagens = <Mensagem>[
-      ...atual.mensagens,
-      Mensagem(texto: conteudo, doUsuario: true),
-      const Mensagem(
-        texto: 'Interface de demonstracao: a integracao com IA sera adicionada '
-            'quando o backend do Ferret estiver disponível.',
-        doUsuario: false,
-      ),
-    ];
-
-    final Conversa atualizada = atual.copyWith(
-      mensagens: mensagens,
-      titulo: atual.mensagens.isEmpty ? conteudo : atual.titulo,
-    );
-
-    state = EstadoAssistente(
-      conversas: <Conversa>[
-        for (final Conversa c in state.conversas)
-          if (c.id == atualizada.id) atualizada else c,
-      ],
-      selecionadaId: state.selecionadaId,
-    );
-  }
-}
-
-final NotifierProvider<AssistenteNotifier, EstadoAssistente>
-    assistenteProvider = NotifierProvider<AssistenteNotifier, EstadoAssistente>(
-        AssistenteNotifier.new);

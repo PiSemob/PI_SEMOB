@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/api/api_client.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../shared/configuracoes.dart';
+import '../../../shared/notificacoes.dart';
 import '../../../shared/widgets/app_shell.dart';
 import '../../../shared/widgets/app_widgets.dart';
+import '../../../shared/widgets/secoes.dart';
 
 class ConfiguracoesPage extends ConsumerStatefulWidget {
   const ConfiguracoesPage({super.key});
@@ -13,145 +17,135 @@ class ConfiguracoesPage extends ConsumerStatefulWidget {
 }
 
 class _ConfiguracoesPageState extends ConsumerState<ConfiguracoesPage> {
-  final TextEditingController _organizacao =
-      TextEditingController(text: 'SEMOB-SCS');
-  final TextEditingController _cidade =
-      TextEditingController(text: 'São Caetano do Sul');
-  final TextEditingController _apiKey = TextEditingController();
+  final TextEditingController _organizacao = TextEditingController();
+  final TextEditingController _cidade = TextEditingController();
+  final TextEditingController _emailRelatorios = TextEditingController();
 
-  static const List<int> _intervalos = <int>[10, 30, 60, 300];
-  static const List<int> _retencoes = <int>[30, 90, 180, 365];
-
-  int _intervalo = 1;
-  int _retencao = 1;
   bool _alertas = true;
   bool _relatorios = false;
+  bool _carregando = true;
+  bool _salvando = false;
+  String? _erroCarga;
+
+  @override
+  void initState() {
+    super.initState();
+    _carregar();
+  }
 
   @override
   void dispose() {
     _organizacao.dispose();
     _cidade.dispose();
-    _apiKey.dispose();
+    _emailRelatorios.dispose();
     super.dispose();
   }
 
-  String get _labelIntervalo {
-    final int s = _intervalos[_intervalo];
-    return s < 60 ? '${s}s' : '${s ~/ 60}min';
+  void _preencher(ConfiguracoesApp ajustes) {
+    _organizacao.text = ajustes.organizacao;
+    _cidade.text = ajustes.cidade;
+    _emailRelatorios.text = ajustes.emailRelatorios;
+    _alertas = ajustes.alertasAnomalia;
+    _relatorios = ajustes.relatoriosAutomaticos;
+  }
+
+  Future<void> _carregar() async {
+    setState(() {
+      _carregando = true;
+      _erroCarga = null;
+    });
+    try {
+      final Map<String, dynamic> corpo =
+          await ref.read(apiClientProvider).configuracoes();
+      if (mounted) setState(() => _preencher(ConfiguracoesApp.deJson(corpo)));
+    } on ErroApi catch (erro) {
+      if (mounted) setState(() => _erroCarga = erro.mensagem);
+    } finally {
+      if (mounted) setState(() => _carregando = false);
+    }
+  }
+
+  Future<void> _salvar() async {
+    setState(() => _salvando = true);
+    final ConfiguracoesApp ajustes = ConfiguracoesApp(
+      organizacao: _organizacao.text,
+      cidade: _cidade.text,
+      alertasAnomalia: _alertas,
+      relatoriosAutomaticos: _relatorios,
+      emailRelatorios: _emailRelatorios.text,
+    );
+    try {
+      final Map<String, dynamic> corpo = await ref
+          .read(apiClientProvider)
+          .salvarConfiguracoes(ajustes.paraJson());
+      if (!mounted) return;
+      setState(() => _preencher(ConfiguracoesApp.deJson(corpo)));
+      ref.invalidate(notificacoesProvider);
+      _avisar('Configurações salvas.');
+    } on ErroApi catch (erro) {
+      _avisar('Não salvou: ${erro.mensagem}');
+    } finally {
+      if (mounted) setState(() => _salvando = false);
+    }
+  }
+
+  void _avisar(String texto) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(texto)));
   }
 
   @override
   Widget build(BuildContext context) {
+    if (_carregando) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    if (_erroCarga != null) {
+      return ErroDeCarga(
+        titulo: 'Não consegui carregar as configurações',
+        mensagem: _erroCarga!,
+        onTentarDeNovo: _carregar,
+      );
+    }
     return PaginaConteudo(
       children: <Widget>[
         const _SobreAPlataforma(),
-        _Secao(
+        Secao(
           titulo: 'Organização',
-          child: LayoutBuilder(
-            builder: (BuildContext context, BoxConstraints c) {
-              final bool duasColunas = c.maxWidth >= 700;
-              final Widget nome = AppTextField(
-                label: 'Nome da Organização',
-                controller: _organizacao,
-              );
-              final Widget cidade = AppTextField(
-                label: 'Cidade',
-                controller: _cidade,
-              );
-
-              if (!duasColunas) {
-                return Column(
-                  children: <Widget>[
-                    nome,
-                    const SizedBox(height: AppSpacing.md),
-                    cidade,
-                  ],
-                );
-              }
-              return Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Expanded(child: nome),
-                  const SizedBox(width: AppSpacing.md),
-                  Expanded(child: cidade),
-                ],
-              );
-            },
+          child: DuasColunas(
+            esquerda: AppTextField(
+                label: 'Nome da Organização', controller: _organizacao),
+            direita: AppTextField(label: 'Cidade', controller: _cidade),
           ),
         ),
-        _Secao(
-          titulo: 'Mapa — HERE Maps API',
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              const Text('API Key', style: AppTextStyles.label),
-              const Text(
-                'Configure para ativar o rastreamento de veículos em tempo real.',
-                style: AppTextStyles.caption,
-              ),
-              const SizedBox(height: AppSpacing.sm),
-              // Chave mascarada: no backend ela deve ficar no servidor, nunca no cliente.
-              TextField(
-                controller: _apiKey,
-                obscureText: true,
-                decoration: const InputDecoration(
-                  hintText: 'Cole a chave aqui',
-                ),
-              ),
-              const SizedBox(height: AppSpacing.sm),
-              Text(
-                'Obter chave gratuita em developer.here.com',
-                style: AppTextStyles.caption.copyWith(color: AppColors.primary),
-              ),
-            ],
-          ),
-        ),
-        _Secao(
-          titulo: 'Dados & Atualização',
-          child: Column(
-            children: <Widget>[
-              _Stepper(
-                titulo: 'Intervalo de atualização',
-                descricao: 'Frequência de refresh do dashboard',
-                valor: _labelIntervalo,
-                onMenos: _intervalo > 0
-                    ? () => setState(() => _intervalo--)
-                    : null,
-                onMais: _intervalo < _intervalos.length - 1
-                    ? () => setState(() => _intervalo++)
-                    : null,
-              ),
-              const Divider(height: AppSpacing.lg),
-              _Stepper(
-                titulo: 'Retenção de dados',
-                descricao: 'Período de histórico armazenado',
-                valor: '${_retencoes[_retencao]}d',
-                onMenos:
-                    _retencao > 0 ? () => setState(() => _retencao--) : null,
-                onMais: _retencao < _retencoes.length - 1
-                    ? () => setState(() => _retencao++)
-                    : null,
-              ),
-            ],
-          ),
-        ),
-        _Secao(
+        Secao(
           titulo: 'Notificações',
           child: Column(
             children: <Widget>[
-              _Switch(
+              OpcaoLigaDesliga(
                 titulo: 'Alertas de anomalia',
-                descricao: 'Notificar ao detectar desvios operacionais',
+                descricao:
+                    'Mostrar no sino os dias atípicos apontados pelo Isolation Forest',
                 valor: _alertas,
                 onChanged: (bool v) => setState(() => _alertas = v),
               ),
               const Divider(height: AppSpacing.lg),
-              _Switch(
+              OpcaoLigaDesliga(
                 titulo: 'Relatórios automáticos',
-                descricao: 'Envio diário por e-mail',
+                descricao:
+                    'Envio diário do Relatório Executivo em PDF por e-mail',
                 valor: _relatorios,
                 onChanged: (bool v) => setState(() => _relatorios = v),
               ),
+              if (_relatorios) ...<Widget>[
+                const SizedBox(height: AppSpacing.md),
+                AppTextField(
+                  label: 'Enviar para',
+                  hint: 'Vazio = todos os usuários cadastrados',
+                  controller: _emailRelatorios,
+                  icone: Icons.mail_outline,
+                  keyboardType: TextInputType.emailAddress,
+                ),
+              ],
             ],
           ),
         ),
@@ -162,14 +156,8 @@ class _ConfiguracoesPageState extends ConsumerState<ConfiguracoesPage> {
             child: AppButton(
               label: 'Salvar configurações',
               icone: Icons.save_outlined,
-              onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text(
-                    'As configurações serão persistidas quando o backend do '
-                    'Ferret estiver disponível.',
-                  ),
-                ),
-              ),
+              carregando: _salvando,
+              onPressed: _salvar,
             ),
           ),
         ),
@@ -183,13 +171,13 @@ class _SobreAPlataforma extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const _Secao(
+    return const Secao(
       titulo: 'Sobre a Plataforma',
       child: Row(
         children: <Widget>[
           AppLogo(compacto: true),
           SizedBox(width: AppSpacing.md),
-           Expanded(
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
@@ -207,113 +195,6 @@ class _SobreAPlataforma extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
-}
-
-class _Secao extends StatelessWidget {
-  const _Secao({required this.titulo, required this.child});
-
-  final String titulo;
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    return AppCard(
-      padding: const EdgeInsets.all(AppSpacing.lg),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          Padding(
-            padding: const EdgeInsets.only(bottom: AppSpacing.md),
-            child: Text(titulo.toUpperCase(), style: AppTextStyles.overline),
-          ),
-          child,
-        ],
-      ),
-    );
-  }
-}
-
-class _Stepper extends StatelessWidget {
-  const _Stepper({
-    required this.titulo,
-    required this.descricao,
-    required this.valor,
-    required this.onMenos,
-    required this.onMais,
-  });
-
-  final String titulo;
-  final String descricao;
-  final String valor;
-  final VoidCallback? onMenos;
-  final VoidCallback? onMais;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: <Widget>[
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              Text(titulo, style: AppTextStyles.label),
-              Text(descricao, style: AppTextStyles.caption),
-            ],
-          ),
-        ),
-        IconButton.outlined(
-          visualDensity: VisualDensity.compact,
-          onPressed: onMenos,
-          icon: const Icon(Icons.remove, size: 16),
-        ),
-        SizedBox(
-          width: 56,
-          child: Text(
-            valor,
-            textAlign: TextAlign.center,
-            style: AppTextStyles.label,
-          ),
-        ),
-        IconButton.outlined(
-          visualDensity: VisualDensity.compact,
-          onPressed: onMais,
-          icon: const Icon(Icons.add, size: 16),
-        ),
-      ],
-    );
-  }
-}
-
-class _Switch extends StatelessWidget {
-  const _Switch({
-    required this.titulo,
-    required this.descricao,
-    required this.valor,
-    required this.onChanged,
-  });
-
-  final String titulo;
-  final String descricao;
-  final bool valor;
-  final ValueChanged<bool> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: <Widget>[
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              Text(titulo, style: AppTextStyles.label),
-              Text(descricao, style: AppTextStyles.caption),
-            ],
-          ),
-        ),
-        Switch(value: valor, onChanged: onChanged),
-      ],
     );
   }
 }
