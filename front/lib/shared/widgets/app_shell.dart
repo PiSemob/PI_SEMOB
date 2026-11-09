@@ -4,10 +4,12 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../core/api/api_client.dart';
+import '../../core/autenticacao/servico_autenticacao.dart';
 import '../../core/theme/app_theme.dart';
 import '../painel.dart';
 import '../providers.dart';
 import 'app_widgets.dart';
+import 'sino_notificacoes.dart';
 
 class NavItem {
   const NavItem({
@@ -82,6 +84,18 @@ const NavItem itemConfiguracoes = NavItem(
   subtitulo: 'Parâmetros do sistema',
 );
 
+const NavItem itemUsuarios = NavItem(
+  rota: '/usuarios',
+  label: 'Usuários',
+  icone: Icons.group_outlined,
+  grupo: 'ADMINISTRAÇÃO',
+  titulo: 'Usuários',
+  subtitulo: 'Acesso dos funcionários da SEMOB',
+);
+
+List<NavItem> itensDoMenu({required bool admin}) =>
+    <NavItem>[...navItems, if (admin) itemUsuarios];
+
 const double _larguraAberta = 264;
 const double _larguraEncolhida = 64;
 const Duration _duracaoMenu = Duration(milliseconds: 160);
@@ -95,15 +109,16 @@ class AppShell extends ConsumerWidget {
   final Widget child;
   final String rotaAtual;
 
-  int get _indice =>
-      navItems.indexWhere((NavItem n) => rotaAtual.startsWith(n.rota));
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final bool largo = MediaQuery.sizeOf(context).width >= 900;
+    final List<NavItem> itens =
+        itensDoMenu(admin: ref.watch(sessaoProvider)?.admin ?? false);
+    final int indice =
+        itens.indexWhere((NavItem n) => rotaAtual.startsWith(n.rota));
     final NavItem atual = rotaAtual.startsWith(itemConfiguracoes.rota)
         ? itemConfiguracoes
-        : navItems[_indice < 0 ? 0 : _indice];
+        : itens[indice < 0 ? 0 : indice];
 
     if (largo) {
       final bool fixa = ref.watch(sidebarFixaProvider);
@@ -120,7 +135,7 @@ class AppShell extends ConsumerWidget {
                 child: Column(
                   children: <Widget>[
                     _Header(item: atual),
-                    Expanded(child: child),
+                    Expanded(child: AtualizacaoPeriodica(child: child)),
                   ],
                 ),
               ),
@@ -128,7 +143,7 @@ class AppShell extends ConsumerWidget {
                 left: 0,
                 top: 0,
                 bottom: 0,
-                child: _Sidebar(indice: _indice),
+                child: _Sidebar(itens: itens, indice: indice),
               ),
             ],
           ),
@@ -148,21 +163,27 @@ class AppShell extends ConsumerWidget {
         ),
         actions: const <Widget>[
           _PeriodoDosDados(),
-          SizedBox(width: AppSpacing.md)
+          SinoNotificacoes(),
+          SizedBox(width: AppSpacing.sm)
         ],
       ),
       drawer: Drawer(
         backgroundColor: AppColors.sidebar,
-        child: _Sidebar(indice: _indice, dentroDoDrawer: true),
+        child: _Sidebar(itens: itens, indice: indice, dentroDoDrawer: true),
       ),
-      body: child,
+      body: AtualizacaoPeriodica(child: child),
     );
   }
 }
 
 class _Sidebar extends ConsumerStatefulWidget {
-  const _Sidebar({required this.indice, this.dentroDoDrawer = false});
+  const _Sidebar({
+    required this.itens,
+    required this.indice,
+    this.dentroDoDrawer = false,
+  });
 
+  final List<NavItem> itens;
   final int indice;
   final bool dentroDoDrawer;
 
@@ -247,11 +268,11 @@ class _SidebarState extends ConsumerState<_Sidebar> {
           child: ListView(
             padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
             children: <Widget>[
-              for (int i = 0; i < navItems.length; i++)
+              for (int i = 0; i < widget.itens.length; i++)
                 _ItemNavIcone(
-                  item: navItems[i],
+                  item: widget.itens[i],
                   selecionado: i == widget.indice,
-                  onTap: () => _irPara(navItems[i]),
+                  onTap: () => _irPara(widget.itens[i]),
                 ),
             ],
           ),
@@ -266,12 +287,12 @@ class _SidebarState extends ConsumerState<_Sidebar> {
   }
 
   Widget _aberta({required bool? fixa}) {
-    final String? usuario = ref.watch(sessaoProvider);
+    final Sessao? usuario = ref.watch(sessaoProvider);
 
     final List<Widget> itens = <Widget>[];
     String? grupoAnterior;
-    for (int i = 0; i < navItems.length; i++) {
-      final NavItem n = navItems[i];
+    for (int i = 0; i < widget.itens.length; i++) {
+      final NavItem n = widget.itens[i];
       if (n.grupo != grupoAnterior) {
         grupoAnterior = n.grupo;
         itens.add(
@@ -342,16 +363,6 @@ class _SidebarState extends ConsumerState<_Sidebar> {
           ),
         ),
         const Divider(height: 1),
-        const Padding(
-          padding: EdgeInsets.fromLTRB(
-            AppSpacing.md + 2,
-            AppSpacing.md,
-            AppSpacing.md,
-            AppSpacing.md,
-          ),
-          child: LogoScs(altura: 30),
-        ),
-        const Divider(height: 1),
         Padding(
           padding: const EdgeInsets.fromLTRB(
             AppSpacing.md + 2,
@@ -370,9 +381,9 @@ class _SidebarState extends ConsumerState<_Sidebar> {
                   borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
                   border: Border.all(color: AppColors.borderStrong),
                 ),
-                child: const Text(
-                  'GS',
-                  style: TextStyle(
+                child: Text(
+                  usuario?.iniciais ?? '?',
+                  style: const TextStyle(
                     fontSize: 11.5,
                     fontWeight: FontWeight.w600,
                     color: AppColors.primary,
@@ -385,16 +396,18 @@ class _SidebarState extends ConsumerState<_Sidebar> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: <Widget>[
-                    const Text(
-                      'Gestor SEMOB',
-                      style: TextStyle(
+                    Text(
+                      usuario?.nome ?? 'Visitante',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
                         color: AppColors.textPrimary,
                       ),
                     ),
                     Text(
-                      usuario ?? 'gestor@semob.gov.br',
+                      usuario?.email ?? '',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: AppTextStyles.caption.copyWith(
@@ -570,12 +583,7 @@ class _Header extends StatelessWidget {
           const SizedBox(width: AppSpacing.md),
           _StatusApi(compacto: compacto),
           const SizedBox(width: AppSpacing.sm),
-          IconButton(
-            tooltip: 'Notificações',
-            icon: const Icon(Icons.notifications_none,
-                size: 21, color: AppColors.textSecondary),
-            onPressed: () {},
-          ),
+          const SinoNotificacoes(),
           const SizedBox(width: AppSpacing.xs),
           AppButton(
             label: 'Exportar',
@@ -684,9 +692,10 @@ class _BotaoSair extends ConsumerWidget {
       tooltip: 'Sair',
       visualDensity: VisualDensity.compact,
       icon: const Icon(Icons.logout, size: 18, color: AppColors.sidebarText),
-      onPressed: () {
+      onPressed: () async {
+        await ref.read(servicoAutenticacaoProvider).sair();
         ref.read(sessaoProvider.notifier).sair();
-        context.go('/login');
+        if (context.mounted) context.go('/login');
       },
     );
   }

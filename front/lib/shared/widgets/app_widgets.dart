@@ -254,7 +254,7 @@ class AppLogos {
   const AppLogos._();
 
   static const String ferret = 'assets/logos/ferret.png';
-  static const String scs = 'assets/logos/scs.png';
+  static const String ferretJr = 'assets/logos/ferret_jr.jpg';
 }
 
 class AppLogo extends StatelessWidget {
@@ -316,75 +316,6 @@ class AppLogo extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: AppTextStyles.caption.copyWith(fontSize: 11),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class LogoScs extends StatelessWidget {
-  const LogoScs({super.key, this.altura = 34});
-
-  final double altura;
-
-  @override
-  Widget build(BuildContext context) {
-    final Widget imagem = SizedBox(
-      height: altura,
-      child: Image.asset(
-        AppLogos.scs,
-        fit: BoxFit.contain,
-        errorBuilder: (BuildContext _, Object __, StackTrace? ___) => Container(
-          height: altura,
-          width: altura,
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            border: Border.all(color: AppColors.borderStrong),
-            borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-          ),
-          child: const Text(
-            'SCS',
-            style: TextStyle(
-              fontSize: 10,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 0.5,
-              color: AppColors.primary,
-            ),
-          ),
-        ),
-      ),
-    );
-
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: <Widget>[
-        imagem,
-        const SizedBox(width: AppSpacing.sm),
-        Flexible(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              Text(
-                'SÃO CAETANO DO SUL',
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: AppTextStyles.overline.copyWith(
-                  color: AppColors.textPrimary,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              Text(
-                'SEMOB · MOBILIDADE URBANA',
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: AppTextStyles.overline.copyWith(
-                  fontSize: 9.5,
-                  fontWeight: FontWeight.w500,
-                ),
               ),
             ],
           ),
