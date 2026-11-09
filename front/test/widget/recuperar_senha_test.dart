@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mobi_ai/core/autenticacao/servico_autenticacao.dart';
+import 'package:mobi_ai/core/autenticacao/sessao.dart';
 import 'package:mobi_ai/features/login/pages/login_page.dart';
 import 'package:mobi_ai/features/login/pages/recuperar_senha_page.dart';
 import 'package:mobi_ai/features/login/pages/redefinir_senha_page.dart';
@@ -10,6 +11,13 @@ import 'package:mobi_ai/features/login/pages/redefinir_senha_page.dart';
 class _ServicoFalho implements ServicoAutenticacao {
   @override
   bool get demonstracao => false;
+
+  @override
+  Future<Sessao> entrar(String email, String senha) async =>
+      throw const ErroAutenticacao('Servidor indisponível.');
+
+  @override
+  Future<void> sair() async {}
 
   @override
   Future<void> pedirRecuperacao(String email) async =>

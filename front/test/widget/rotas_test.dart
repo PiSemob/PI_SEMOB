@@ -16,6 +16,8 @@ void main() {
     tester.view.physicalSize = const Size(1400, 3200);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
+    final GoRouter appRouter = criarRouter(logado: () => true);
+    addTearDown(appRouter.dispose);
     await tester.pumpWidget(
       ProviderScope(
         overrides: <Override>[
