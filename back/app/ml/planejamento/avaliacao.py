@@ -7,7 +7,7 @@ Prophet e SARIMAX expõem a mesma função `prever_serie(serie, dias)`. Por isso
 validação e a resposta são escritas uma vez só, aqui.
 """
 
-from typing import Callable
+from collections.abc import Callable
 
 import holidays
 import pandas as pd

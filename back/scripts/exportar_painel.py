@@ -78,7 +78,7 @@ def montar_painel(limpas: dict[str, pd.DataFrame], arquivos: list[dict]) -> dict
     datas = sorted(set(geral.index) | set(passageiros.index) | set(vendas.index))
     diario = []
     for d in datas:
-        def campo(df, coluna):
+        def campo(df, coluna, d=d):
             return _numero(df.at[d, coluna]) if d in df.index else None
 
         diario.append({
@@ -156,7 +156,7 @@ def montar_painel(limpas: dict[str, pd.DataFrame], arquivos: list[dict]) -> dict
     bases = [
         {
             "tabela": nome,
-            "registros": int(len(df)),
+            "registros": len(df),
             "suspeitos": int(df["suspeito"].sum()),
             "inicio": df["data"].min().isoformat(),
             "fim": df["data"].max().isoformat(),
