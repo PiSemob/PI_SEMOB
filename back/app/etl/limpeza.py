@@ -10,9 +10,9 @@ Para cada tabela, nesta ordem:
   4. sinaliza o que parece errado, sem apagar.
 """
 
+from collections.abc import Callable, Iterable
 from datetime import datetime
-from functools import lru_cache
-from typing import Callable, Iterable
+from functools import cache
 
 import pandas as pd
 from sqlalchemy import Table
@@ -77,7 +77,7 @@ def texto_ou_nulo(serie: pd.Series) -> pd.Series:
     return serie.where(serie != "", None)
 
 
-@lru_cache(maxsize=None)
+@cache
 def data_de_geracao(texto: str, mes_referencia: str) -> datetime:
     """Converte a data de geração do arquivo, que vem em dois formatos.
 
